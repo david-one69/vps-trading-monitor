@@ -160,7 +160,7 @@
       <button class="pill-btn"             data-mode="demo" onclick="setMode(this)">Demo</button>
     </div>
     <div class="pill-group" id="timeGroup">
-      <button class="pill-btn active-time" data-hours="24"   onclick="setPeriod(this)">24H</button>
+      <button class="pill-btn active-time" data-hours="1d"  onclick="setPeriod(this)">1G</button>
       <button class="pill-btn"             data-hours="168"  onclick="setPeriod(this)">7G</button>
       <button class="pill-btn"             data-hours="720"  onclick="setPeriod(this)">30G</button>
       <button class="pill-btn"             data-hours="0"    onclick="setPeriod(this)">TOT</button>
@@ -227,7 +227,7 @@ const EA_DEFAULTS = {
 // ═══════════════════════════════════════════
 //  STATO
 // ═══════════════════════════════════════════
-let currentHours  = 24;   // 0 = tutto lo storico
+let currentHours  = "1d";   // "1d" = giorno broker, 0 = tutto, numero = ore rolling
 let currentMode   = "live";
 let expandedVps   = {};
 let expandedMt    = {};
@@ -236,12 +236,31 @@ let eaNames       = Object.assign({},EA_DEFAULTS,JSON.parse(localStorage.getItem
 let rawData       = [];
 
 // ═══════════════════════════════════════════
-//  FILTRO TEMPORALE — calcolato lato browser
-//  usa l'ora locale del browser (non del broker)
+//  FILTRO TEMPORALE
+//  1G = dalla mezzanotte del broker (usa broker_time inviato dall'EA)
+//  7G/30G = ore rolling dal momento attuale
+//  TOT = tutto lo storico
 // ═══════════════════════════════════════════
+function getBrokerTime() {
+  // Prende il broker_time più recente tra tutti gli account ricevuti
+  let bt = 0;
+  rawData.forEach(vps=>(vps.accounts||[]).forEach(acc=>{
+    if(acc.broker_time && acc.broker_time > bt) bt = acc.broker_time;
+  }));
+  return bt;
+}
+
 function getCutoff() {
-  if(currentHours===0) return 0;
-  // Timestamp Unix in secondi
+  if(currentHours === 0) return 0;
+  if(currentHours === "1d") {
+    // Mezzanotte del broker: broker_time - (broker_time % 86400)
+    const bt = getBrokerTime();
+    if(bt > 0) return bt - (bt % 86400);  // inizio giornata broker
+    // Fallback: mezzanotte UTC locale
+    const now = new Date();
+    now.setUTCHours(0,0,0,0);
+    return Math.floor(now.getTime()/1000);
+  }
   return Math.floor(Date.now()/1000) - currentHours*3600;
 }
 
@@ -572,12 +591,13 @@ function setMode(btn){
   updateLabel();renderAll();
 }
 function setPeriod(btn){
-  currentHours=parseInt(btn.dataset.hours);
+  const val = btn.dataset.hours;
+  currentHours = val === "0" ? 0 : val === "1d" ? "1d" : parseInt(val);
   document.querySelectorAll("#timeGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?" active-time":""));
   updateLabel();renderAll();
 }
 function updateLabel(){
-  const p={24:"Ultime 24H",168:"Ultimi 7 Giorni",720:"Ultimi 30 Giorni",0:"Tutto lo storico"};
+  const p={"1d":"Giorno corrente (broker)",168:"Ultimi 7 Giorni",720:"Ultimi 30 Giorni",0:"Tutto lo storico"};
   const m={both:"Tutti",live:"Solo Live",demo:"Solo Demo"};
   document.getElementById("filterLabel").textContent=`${p[currentHours]} · ${m[currentMode]}`;
 }
