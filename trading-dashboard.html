@@ -7,261 +7,153 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:      #080c12;
-    --bg2:     #0e1420;
-    --bg3:     #141c2e;
-    --bg4:     #1a2438;
-    --border:  #1f2d45;
-    --border2: #2a3d5c;
-    --text:    #e2eaf7;
-    --text2:   #7e9ab8;
-    --text3:   #4a6180;
-    --accent:  #00d4ff;
-    --green:   #00e676;
-    --red:     #ff3d5e;
-    --gold:    #ffc947;
-    --live:    #00e676;
-    --demo:    #ffc947;
-    --radius:  10px;
+    --bg:#080c12; --bg2:#0e1420; --bg3:#141c2e; --bg4:#1a2438;
+    --border:#1f2d45; --border2:#2a3d5c;
+    --text:#e2eaf7; --text2:#7e9ab8; --text3:#4a6180;
+    --accent:#00d4ff; --green:#00e676; --red:#ff3d5e; --gold:#ffc947;
+    --live:#00e676; --demo:#ffc947; --radius:10px;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
-  body::before {
-    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-    background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,212,255,0.07) 0%, transparent 60%);
-  }
-  .app { position:relative; z-index:1; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,212,255,.07) 0%,transparent 60%);}
+  .app{position:relative;z-index:1;}
 
-  /* ── HEADER ── */
-  header {
-    background:rgba(14,20,32,0.97); border-bottom:1px solid var(--border);
-    padding:0 24px; display:flex; align-items:center; justify-content:space-between;
-    height:58px; position:sticky; top:0; z-index:100; backdrop-filter:blur(12px);
-    flex-wrap:wrap; gap:8px;
-  }
-  .logo { display:flex; align-items:center; gap:10px; }
-  .logo-icon {
-    width:32px; height:32px; border-radius:8px;
-    background:linear-gradient(135deg,var(--accent),#0099cc);
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:#000;
-  }
-  .logo-text { font-family:'Space Mono',monospace; font-size:13px; font-weight:700; }
-  .logo-sub  { font-size:10px; color:var(--text3); letter-spacing:.1em; text-transform:uppercase; }
-  .header-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  /* HEADER */
+  header{background:rgba(14,20,32,.97);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);flex-wrap:wrap;gap:6px;}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--accent),#0099cc);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;}
+  .logo-text{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;}
+  .logo-sub{font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;}
+  .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .live-badge{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);}
+  .live-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,230,118,.4);}50%{box-shadow:0 0 0 4px rgba(0,230,118,0);}}
+  .pill-group{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:2px;gap:2px;}
+  .pill-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:none;cursor:pointer;transition:all .2s;color:var(--text3);background:transparent;}
+  .pill-btn.active-both{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.25);}
+  .pill-btn.active-live{background:rgba(0,230,118,.12);color:var(--live);border:1px solid rgba(0,230,118,.28);}
+  .pill-btn.active-demo{background:rgba(255,201,71,.12);color:var(--demo);border:1px solid rgba(255,201,71,.28);}
+  .pill-btn.active-time{background:var(--bg4);color:var(--accent);border:1px solid var(--border2);font-family:'Space Mono',monospace;}
+  .status-tag{font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);}
+  .settings-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;transition:all .2s;}
+  .settings-btn:hover{background:var(--bg4);color:var(--accent);border-color:var(--accent);}
 
-  .pill-group {
-    display:flex; background:var(--bg3); border:1px solid var(--border);
-    border-radius:8px; padding:3px; gap:3px;
-  }
-  .pill-btn {
-    padding:4px 12px; border-radius:6px; font-size:11px; font-weight:600;
-    letter-spacing:.06em; text-transform:uppercase; border:none; cursor:pointer;
-    transition:all .2s; color:var(--text3); background:transparent;
-  }
-  .pill-btn.active-both  { background:rgba(0,212,255,.1);  color:var(--accent); border:1px solid rgba(0,212,255,.25); }
-  .pill-btn.active-live  { background:rgba(0,230,118,.12); color:var(--live);   border:1px solid rgba(0,230,118,.28); }
-  .pill-btn.active-demo  { background:rgba(255,201,71,.12);color:var(--demo);   border:1px solid rgba(255,201,71,.28); }
-  .pill-btn.active-time  { background:var(--bg4); color:var(--accent); border:1px solid var(--border2); }
-  .pill-btn.active-time  { font-family:'Space Mono',monospace; }
+  /* MAIN */
+  main{padding:18px 20px;max-width:1600px;margin:0 auto;}
+  .summary-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:22px;}
+  .scard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;position:relative;overflow:hidden;}
+  .scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+  .scard.c-accent::before{background:linear-gradient(90deg,var(--accent),transparent);}
+  .scard.c-green::before{background:linear-gradient(90deg,var(--green),transparent);}
+  .scard.c-gold::before{background:linear-gradient(90deg,var(--gold),transparent);}
+  .scard-label{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:5px;font-weight:700;}
+  .scard-val{font-family:'Space Mono',monospace;font-size:21px;font-weight:700;line-height:1;margin-bottom:3px;}
+  .scard-sub{font-size:10px;color:var(--text3);}
+  .pos{color:var(--green);} .neg{color:var(--red);} .neu{color:var(--text);} .acc{color:var(--accent);} .gld{color:var(--gold);}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .section-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:700;}
 
-  .live-badge { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text3); }
-  .live-badge::before {
-    content:''; width:6px; height:6px; border-radius:50%; background:var(--green);
-    animation:pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%,100%{ box-shadow:0 0 0 0 rgba(0,230,118,.4); }
-    50%    { box-shadow:0 0 0 4px rgba(0,230,118,0); }
-  }
-  .status-tag { font-family:'Space Mono',monospace; font-size:10px; color:var(--text3); }
+  /* VPS BLOCK */
+  .vps-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;animation:fadeUp .4s ease both;}
+  .vps-block:hover{border-color:var(--border2);}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .vps-header{display:grid;grid-template-columns:22px 1fr repeat(4,110px) 55px;align-items:center;gap:8px;padding:13px 16px;background:var(--bg3);border-bottom:1px solid transparent;cursor:pointer;user-select:none;transition:background .15s;}
+  .vps-header:hover{background:var(--bg4);}
+  .vps-header.open{border-bottom-color:var(--border);}
+  .toggle-icon{color:var(--text3);font-size:8px;transition:transform .25s;}
+  .toggle-icon.open{transform:rotate(90deg);}
+  .vps-name-group{display:flex;align-items:center;gap:7px;}
+  .vps-badge{background:rgba(0,212,255,.12);border:1px solid rgba(0,212,255,.2);border-radius:4px;padding:2px 7px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);}
+  .vps-name{font-size:13px;font-weight:600;}
+  .vps-meta{font-size:10px;color:var(--text3);}
+  .mcell{text-align:right;}
+  .mcell-label{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:2px;font-weight:600;}
+  .mcell-val{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;}
+  .vps-content{display:none;padding:10px;gap:9px;flex-direction:column;}
+  .vps-content.open{display:flex;}
 
-  /* ── MAIN ── */
-  main { padding:20px 24px; max-width:1600px; margin:0 auto; }
+  /* MT BLOCK */
+  .mt-block{background:var(--bg);border:1px solid var(--border);border-radius:5px;overflow:hidden;}
+  .mt-header{display:grid;grid-template-columns:22px 1fr repeat(4,95px) 55px;align-items:center;gap:8px;padding:9px 13px;cursor:pointer;transition:background .15s;border-bottom:1px solid transparent;}
+  .mt-header:hover{background:var(--bg4);}
+  .mt-header.open{border-bottom-color:var(--border);}
+  .mt-name-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+  .mt-mode{border-radius:3px;padding:1px 6px;font-family:'Space Mono',monospace;font-size:9px;font-weight:700;}
+  .mt-mode.live{background:rgba(0,230,118,.12);border:1px solid rgba(0,230,118,.25);color:var(--live);}
+  .mt-mode.demo{background:rgba(255,201,71,.12);border:1px solid rgba(255,201,71,.25);color:var(--demo);}
+  .mt-type{font-size:9px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-weight:600;}
+  .mt-name{font-size:12px;font-weight:500;}
+  .mt-broker{font-size:10px;color:var(--text3);}
+  .ea-container{display:none;overflow-x:auto;}
+  .ea-container.open{display:block;}
 
-  /* ── SUMMARY CARDS ── */
-  .summary-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:24px; }
-  .scard {
-    background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius);
-    padding:16px 18px; position:relative; overflow:hidden;
-  }
-  .scard::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
-  .scard.c-accent::before { background:linear-gradient(90deg,var(--accent),transparent); }
-  .scard.c-green::before  { background:linear-gradient(90deg,var(--green),transparent); }
-  .scard.c-gold::before   { background:linear-gradient(90deg,var(--gold),transparent); }
-  .scard.c-red::before    { background:linear-gradient(90deg,var(--red),transparent); }
-  .scard-label { font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--text3); margin-bottom:6px; font-weight:700; }
-  .scard-val   { font-family:'Space Mono',monospace; font-size:22px; font-weight:700; line-height:1; margin-bottom:4px; }
-  .scard-sub   { font-size:11px; color:var(--text3); }
-  .pos { color:var(--green); } .neg { color:var(--red); }
-  .neu { color:var(--text);  } .acc { color:var(--accent); } .gld { color:var(--gold); }
+  /* EA TABLE */
+  .ea-table{width:100%;border-collapse:collapse;}
+  .ea-table th{padding:6px 11px;text-align:left;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;background:rgba(8,12,18,.5);border-bottom:1px solid var(--border);white-space:nowrap;}
+  .ea-table th.r{text-align:right;}
+  .ea-table td{padding:8px 11px;font-size:11px;border-bottom:1px solid rgba(31,45,69,.4);vertical-align:middle;}
+  .ea-table tr:last-child td{border-bottom:none;}
+  .ea-table tr:hover td{background:rgba(26,36,56,.4);}
+  .ea-table tr.disabled td{opacity:.32;}
+  .ea-name{font-weight:500;}
+  .ea-magic-sub{font-family:'Space Mono',monospace;font-size:8px;color:var(--text3);}
+  .td-r{text-align:right;font-family:'Space Mono',monospace;font-weight:700;white-space:nowrap;}
+  .wr-wrap{display:flex;align-items:center;gap:5px;min-width:100px;}
+  .wr-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+  .wr-fill{height:100%;border-radius:2px;}
+  .wr-val{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;width:34px;text-align:right;}
+  .pf-pill{display:inline-flex;align-items:center;padding:2px 6px;border-radius:3px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;}
+  .pf-h{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.2);}
+  .pf-m{background:rgba(255,201,71,.1);color:var(--gold);border:1px solid rgba(255,201,71,.2);}
+  .pf-l{background:rgba(255,61,94,.1);color:var(--red);border:1px solid rgba(255,61,94,.2);}
+  .pl-val{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;}
+  .ea-toggle{width:26px;height:15px;border-radius:8px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;background:var(--border2);}
+  .ea-toggle::after{content:'';position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:#fff;transition:transform .2s;}
+  .ea-toggle.on{background:var(--green);}
+  .ea-toggle.on::after{transform:translateX(11px);}
+  .total-row td{background:rgba(0,212,255,.04);border-top:1px solid rgba(0,212,255,.12);font-weight:600;}
 
-  /* ── SECTION ── */
-  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .section-title  { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); font-weight:700; }
+  /* STATE BOX */
+  .state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;gap:10px;color:var(--text3);font-size:13px;text-align:center;}
+  .state-box .icon{font-size:32px;}
+  .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ── VPS BLOCK ── */
-  .vps-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px; overflow:hidden; transition:border-color .2s; animation:fadeUp .4s ease both; }
-  .vps-block:hover { border-color:var(--border2); }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  /* ── SETTINGS PANEL ── */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto;}
+  .overlay.open{display:flex;}
+  .settings-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:680px;max-width:96vw;margin-bottom:40px;display:flex;flex-direction:column;max-height:85vh;}
+  .sp-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;}
+  .sp-head h2{font-size:15px;font-weight:700;margin-bottom:3px;}
+  .sp-head p{font-size:11px;color:var(--text3);}
+  .sp-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px;line-height:1;}
+  .sp-close:hover{color:var(--text);}
+  .sp-body{overflow-y:auto;flex:1;padding:16px 24px;}
+  .sp-search{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:12px;padding:8px 14px;outline:none;margin-bottom:16px;}
+  .sp-search:focus{border-color:var(--accent);}
 
-  .vps-header {
-    display:grid; grid-template-columns:24px 1fr repeat(4,120px) 60px;
-    align-items:center; gap:10px; padding:14px 18px;
-    background:var(--bg3); border-bottom:1px solid transparent;
-    cursor:pointer; user-select:none; transition:background .15s;
-  }
-  .vps-header:hover { background:var(--bg4); }
-  .vps-header.open  { border-bottom-color:var(--border); }
+  .sp-group{margin-bottom:20px;}
+  .sp-group-title{font-family:'Space Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 
-  .toggle-icon { color:var(--text3); font-size:9px; transition:transform .25s; }
-  .toggle-icon.open { transform:rotate(90deg); }
+  .sp-row{display:grid;grid-template-columns:100px 1fr 32px;align-items:center;gap:8px;padding:5px 0;}
+  .sp-magic{font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);}
+  .sp-input{background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;padding:5px 10px;outline:none;width:100%;transition:border-color .2s;}
+  .sp-input:focus{border-color:var(--accent);}
+  .sp-input.modified{border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.04);}
+  .sp-clear{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px;border-radius:3px;transition:color .2s;}
+  .sp-clear:hover{color:var(--red);}
 
-  .vps-name-group { display:flex; align-items:center; gap:8px; }
-  .vps-badge { background:rgba(0,212,255,.12); border:1px solid rgba(0,212,255,.2); border-radius:5px; padding:2px 8px; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:var(--accent); }
-  .vps-name { font-size:14px; font-weight:600; }
-  .vps-meta { font-size:11px; color:var(--text3); }
+  .sp-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg3);border-radius:0 0 14px 14px;}
+  .btn-save-all{background:var(--accent);color:#000;border:none;border-radius:7px;padding:8px 22px;font-weight:700;font-size:12px;cursor:pointer;}
+  .btn-save-all:hover{opacity:.85;}
+  .btn-reset-all{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline;}
+  .save-ok{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;}
 
-  .mcell { text-align:right; }
-  .mcell-label { font-size:9px; text-transform:uppercase; letter-spacing:.08em; color:var(--text3); margin-bottom:2px; font-weight:600; }
-  .mcell-val   { font-family:'Space Mono',monospace; font-size:13px; font-weight:700; }
+  /* RESPONSIVE */
+  @media(max-width:1000px){.vps-header{grid-template-columns:22px 1fr repeat(3,95px)}.mt-header{grid-template-columns:22px 1fr repeat(3,85px)}}
+  @media(max-width:680px){header{height:auto;padding:8px 14px;}main{padding:12px 12px;}.summary-bar{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:22px 1fr repeat(2,80px)}.mt-header{grid-template-columns:22px 1fr repeat(2,75px)}}
 
-  /* ── VPS CONTENT ── */
-  .vps-content { display:none; padding:12px; gap:10px; flex-direction:column; }
-  .vps-content.open { display:flex; }
-
-  /* ── MT BLOCK ── */
-  .mt-block { background:var(--bg); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
-  .mt-header {
-    display:grid; grid-template-columns:24px 1fr repeat(4,100px) 60px;
-    align-items:center; gap:10px; padding:10px 14px;
-    cursor:pointer; transition:background .15s;
-    border-bottom:1px solid transparent;
-  }
-  .mt-header:hover { background:var(--bg4); }
-  .mt-header.open  { border-bottom-color:var(--border); }
-
-  .mt-name-group { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .mt-mode { border-radius:4px; padding:2px 7px; font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:.04em; }
-  .mt-mode.live { background:rgba(0,230,118,.12); border:1px solid rgba(0,230,118,.25); color:var(--live); }
-  .mt-mode.demo { background:rgba(255,201,71,.12);  border:1px solid rgba(255,201,71,.25);  color:var(--demo); }
-  .mt-type { font-size:10px; color:var(--text3); background:var(--bg3); border:1px solid var(--border); border-radius:3px; padding:1px 5px; font-weight:600; }
-  .mt-name { font-size:12px; font-weight:500; }
-  .mt-broker { font-size:11px; color:var(--text3); }
-
-  /* ── EA TABLE ── */
-  .ea-container { display:none; overflow-x:auto; }
-  .ea-container.open { display:block; }
-  .ea-table { width:100%; border-collapse:collapse; }
-  .ea-table th {
-    padding:7px 12px; text-align:left; font-size:9px; text-transform:uppercase;
-    letter-spacing:.1em; color:var(--text3); font-weight:700;
-    background:rgba(8,12,18,.5); border-bottom:1px solid var(--border); white-space:nowrap;
-  }
-  .ea-table th.r { text-align:right; }
-  .ea-table td { padding:9px 12px; font-size:12px; border-bottom:1px solid rgba(31,45,69,.4); vertical-align:middle; }
-  .ea-table tr:last-child td { border-bottom:none; }
-  .ea-table tr:hover td { background:rgba(26,36,56,.4); }
-  .ea-table tr.disabled td { opacity:.35; }
-
-  .ea-name    { font-weight:500; }
-  .ea-magic   { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); }
-  .td-r       { text-align:right; font-family:'Space Mono',monospace; font-weight:700; white-space:nowrap; }
-
-  /* WR bar */
-  .wr-wrap { display:flex; align-items:center; gap:6px; min-width:110px; }
-  .wr-bar  { flex:1; height:3px; background:var(--bg3); border-radius:2px; overflow:hidden; }
-  .wr-fill { height:100%; border-radius:2px; }
-  .wr-val  { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; width:38px; text-align:right; }
-
-  /* PF pill */
-  .pf-pill { display:inline-flex; align-items:center; padding:2px 7px; border-radius:4px; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; }
-  .pf-h { background:rgba(0,230,118,.1);  color:var(--green); border:1px solid rgba(0,230,118,.2); }
-  .pf-m { background:rgba(255,201,71,.1); color:var(--gold);  border:1px solid rgba(255,201,71,.2); }
-  .pf-l { background:rgba(255,61,94,.1);  color:var(--red);   border:1px solid rgba(255,61,94,.2); }
-
-  .pl-val { font-family:'Space Mono',monospace; font-size:13px; font-weight:700; }
-
-  /* ── TOGGLE EA ── */
-  .ea-toggle {
-    width:28px; height:16px; border-radius:8px; border:none; cursor:pointer;
-    position:relative; transition:background .2s; flex-shrink:0;
-    background:var(--border2);
-  }
-  .ea-toggle::after {
-    content:''; position:absolute; top:2px; left:2px;
-    width:12px; height:12px; border-radius:50%; background:#fff;
-    transition:transform .2s;
-  }
-  .ea-toggle.on { background:var(--green); }
-  .ea-toggle.on::after { transform:translateX(12px); }
-
-  /* total row */
-  .total-row td { background:rgba(0,212,255,.04); border-top:1px solid rgba(0,212,255,.12); font-weight:600; }
-
-  /* ── LOADING / ERROR ── */
-  .state-box {
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:60px 20px; gap:12px; color:var(--text3); font-size:14px; text-align:center;
-  }
-  .state-box .icon { font-size:36px; }
-  .spinner {
-    width:32px; height:32px; border:3px solid var(--border);
-    border-top-color:var(--accent); border-radius:50%;
-    animation:spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform:rotate(360deg); } }
-
-  /* ── RESPONSIVE ── */
-  @media(max-width:1100px){
-    .vps-header { grid-template-columns:24px 1fr repeat(3,100px) 60px; }
-    .mt-header  { grid-template-columns:24px 1fr repeat(3,90px)  60px; }
-    .vps-header .mcell:last-child, .mt-header .mcell:last-child { display:none; }
-  }
-  @media(max-width:700px){
-    header { height:auto; padding:10px 16px; }
-    main   { padding:14px 14px; }
-    .summary-bar { grid-template-columns:1fr 1fr; }
-    .vps-header { grid-template-columns:24px 1fr repeat(2,90px); }
-    .mt-header  { grid-template-columns:24px 1fr repeat(2,80px); }
-    .vps-header .mcell:nth-child(n+5), .mt-header .mcell:nth-child(n+5) { display:none; }
-  }
-
-  footer { text-align:center; padding:28px; color:var(--text3); font-size:11px; border-top:1px solid var(--border); margin-top:16px; }
-
-  /* ── EA RENAME ── */
-  .ea-name-wrap { display:flex; align-items:center; gap:6px; }
-  .ea-name      { font-weight:500; cursor:pointer; border-bottom:1px dashed transparent; transition:border-color .2s; }
-  .ea-name:hover { border-bottom-color:var(--accent); color:var(--accent); }
-  .ea-name-input {
-    background:var(--bg4); border:1px solid var(--accent); border-radius:4px;
-    color:var(--text); font-size:12px; font-family:'DM Sans',sans-serif;
-    padding:2px 7px; outline:none; width:180px;
-  }
-  .rename-hint { font-size:9px; color:var(--text3); white-space:nowrap; }
-
-  /* ── MODAL RENAME (mobile friendly) ── */
-  .modal-overlay {
-    display:none; position:fixed; inset:0; background:rgba(0,0,0,.7);
-    z-index:999; align-items:center; justify-content:center;
-  }
-  .modal-overlay.open { display:flex; }
-  .modal {
-    background:var(--bg3); border:1px solid var(--border2); border-radius:12px;
-    padding:24px; width:320px; max-width:90vw;
-  }
-  .modal h3 { font-size:14px; font-weight:600; margin-bottom:6px; }
-  .modal p  { font-size:11px; color:var(--text3); margin-bottom:14px; }
-  .modal input {
-    width:100%; background:var(--bg4); border:1px solid var(--border2);
-    border-radius:6px; color:var(--text); font-size:13px;
-    padding:8px 12px; outline:none; margin-bottom:14px;
-  }
-  .modal input:focus { border-color:var(--accent); }
-  .modal-btns { display:flex; gap:8px; justify-content:flex-end; }
-  .btn-save   { background:var(--accent); color:#000; border:none; border-radius:6px; padding:7px 18px; font-weight:700; font-size:12px; cursor:pointer; }
-  .btn-cancel { background:var(--bg4); color:var(--text2); border:1px solid var(--border2); border-radius:6px; padding:7px 14px; font-size:12px; cursor:pointer; }
-  .btn-reset  { background:transparent; color:var(--text3); border:none; font-size:11px; cursor:pointer; margin-right:auto; text-decoration:underline; }
+  footer{text-align:center;padding:24px;color:var(--text3);font-size:10px;border-top:1px solid var(--border);margin-top:14px;}
 </style>
 </head>
 <body>
@@ -277,21 +169,19 @@
   </div>
   <div class="header-right">
     <div class="live-badge">Live</div>
-
     <div class="pill-group" id="modeGroup">
-      <button class="pill-btn"            data-mode="both"  onclick="setMode(this)">Tutti</button>
-      <button class="pill-btn active-live" data-mode="live"  onclick="setMode(this)">Live</button>
-      <button class="pill-btn"             data-mode="demo"  onclick="setMode(this)">Demo</button>
+      <button class="pill-btn"             data-mode="both" onclick="setMode(this)">Tutti</button>
+      <button class="pill-btn active-live" data-mode="live" onclick="setMode(this)">Live</button>
+      <button class="pill-btn"             data-mode="demo" onclick="setMode(this)">Demo</button>
     </div>
-
     <div class="pill-group" id="timeGroup">
       <button class="pill-btn active-time" data-period="1d"  onclick="setPeriod(this)">1G</button>
       <button class="pill-btn"             data-period="7d"  onclick="setPeriod(this)">7G</button>
       <button class="pill-btn"             data-period="30d" onclick="setPeriod(this)">30G</button>
       <button class="pill-btn"             data-period="all" onclick="setPeriod(this)">TOT</button>
     </div>
-
     <span class="status-tag" id="statusTag">Caricamento...</span>
+    <button class="settings-btn" onclick="openSettings()">⚙ Nomi EA</button>
   </div>
 </header>
 
@@ -301,438 +191,424 @@
   </div>
   <div class="section-header">
     <span class="section-title">Panoramica VPS</span>
-    <span style="font-size:11px;color:var(--text3)" id="filterLabel"></span>
+    <span style="font-size:10px;color:var(--text3)" id="filterLabel"></span>
   </div>
   <div id="vpsList"></div>
 </main>
 
-<footer>VPS Trading Monitor &nbsp;·&nbsp; Aggiornamento automatico ogni 60s &nbsp;·&nbsp; Clicca il nome EA per rinominarlo</footer>
+<footer>VPS Trading Monitor · Aggiornamento automatico ogni 60s</footer>
 </div>
 
-<!-- MODAL RINOMINA EA -->
-<div class="modal-overlay" id="renameModal">
-  <div class="modal">
-    <h3>✏️ Rinomina EA</h3>
-    <p id="renameSubtitle">Magic Number: —</p>
-    <input type="text" id="renameInput" placeholder="Inserisci il nome dell'EA..." autocomplete="off"
-      onkeydown="if(event.key==='Enter')saveRename(); if(event.key==='Escape')closeRename();" />
-    <div class="modal-btns">
-      <button class="btn-reset"  onclick="resetEAName()">Ripristina originale</button>
-      <button class="btn-cancel" onclick="closeRename()">Annulla</button>
-      <button class="btn-save"   onclick="saveRename()">Salva</button>
+<!-- SETTINGS PANEL -->
+<div class="overlay" id="settingsOverlay" onclick="overlayClick(event)">
+  <div class="settings-panel">
+    <div class="sp-head">
+      <div>
+        <h2>⚙ Gestione Nomi EA</h2>
+        <p>Modifica i nomi visualizzati per ogni Magic Number · salvati nel browser</p>
+      </div>
+      <button class="sp-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="sp-body">
+      <input class="sp-search" type="text" placeholder="🔍 Cerca magic o nome..." oninput="filterSettings(this.value)" />
+      <div id="spContent"></div>
+    </div>
+    <div class="sp-foot">
+      <button class="btn-reset-all" onclick="resetAllNames()">Ripristina tutti i default</button>
+      <span class="save-ok" id="saveOk">✓ Salvato!</span>
+      <button class="btn-save-all" onclick="saveAllNames()">💾 Salva tutto</button>
     </div>
   </div>
 </div>
 
 <script>
-// ─────────────────────────────────────────
-//  CONFIG — cambia solo l'URL del server
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════
 const SERVER_URL = "https://vps-trading-monitor.onrender.com";
 const REFRESH_MS = 60000;
 
-// ─────────────────────────────────────────
+// ── NOMI EA DI DEFAULT (magic → nome) ──────────
+// Questi sono i tuoi nomi reali — puoi cambiarli
+// anche dal pannello ⚙ Nomi EA nella dashboard
+const EA_DEFAULTS = {
+  // VPS-01
+  234806: "Titany / Titany X AXI PRO",
+  99999:  "TradeCopier",
+  // VPS-02 — FTMO
+  164806: "TitanyX Pro",
+  // VPS-02 — Ultima Markets EA Personali (#17035723)
+  220150:  "X2201-fisso",
+  400012:  "Battle-EA-LIVE",
+  2201503: "X2201-auto-lot",
+  100451:  "Battle-v3.5.3",
+  // VPS-02 — Demo Battle (#4168649)
+  1004492: "Battle-v3.3.3",
+  100449:  "Battle-v3.4.1",
+  // VPS-02 — Demo X2201 (#4160677)
+  2201502: "X2201-h24",
+  220160:  "X2201-v1.6",
+};
+
+// ═══════════════════════════════════════════════
 //  STATO
-// ─────────────────────────────────────────
-let currentPeriod  = "1d";
-let currentMode    = "live";
-let expandedVps    = {};
-let expandedMt     = {};
-let disabledEAs    = JSON.parse(localStorage.getItem("disabledEAs") || "{}");
-let eaNames        = JSON.parse(localStorage.getItem("eaNames")     || "{}");
-let rawData        = [];
-let lastFetch      = null;
+// ═══════════════════════════════════════════════
+let currentPeriod = "1d";
+let currentMode   = "live";
+let expandedVps   = {};
+let expandedMt    = {};
+let disabledEAs   = JSON.parse(localStorage.getItem("disabledEAs") || "{}");
+// Nomi personalizzati: partono dai default, sovrascrivibili dall'utente
+let eaNames       = Object.assign({}, EA_DEFAULTS, JSON.parse(localStorage.getItem("eaNames") || "{}"));
+let rawData       = [];
 
-// Rename state
-let renameKey      = "";
-let renameOriginal = "";
-
-// ─────────────────────────────────────────
-//  RENAME FUNCTIONS
-// ─────────────────────────────────────────
-function eaNameKey(magic) { return `ea_${magic}`; }
-
-function getEAName(ea) {
-  return eaNames[eaNameKey(ea.magic)] || ea.name || ("EA #" + ea.magic);
-}
-
-function openRename(magic, originalName) {
-  renameKey      = eaNameKey(magic);
-  renameOriginal = originalName;
-  document.getElementById("renameSubtitle").textContent = `Magic: ${magic}  |  Nome attuale: ${originalName}`;
-  const input = document.getElementById("renameInput");
-  input.value = eaNames[renameKey] || originalName;
-  document.getElementById("renameModal").classList.add("open");
-  setTimeout(() => { input.focus(); input.select(); }, 100);
-}
-
-function closeRename() {
-  document.getElementById("renameModal").classList.remove("open");
-}
-
-function saveRename() {
-  const val = document.getElementById("renameInput").value.trim();
-  if (val) {
-    eaNames[renameKey] = val;
-    localStorage.setItem("eaNames", JSON.stringify(eaNames));
-  }
-  closeRename();
-  renderAll();
-}
-
-function resetEAName() {
-  delete eaNames[renameKey];
-  localStorage.setItem("eaNames", JSON.stringify(eaNames));
-  closeRename();
-  renderAll();
-}
-
-// Chiudi modal cliccando fuori
-document.getElementById("renameModal").addEventListener("click", function(e) {
-  if (e.target === this) closeRename();
-});
-
-// ─────────────────────────────────────────
-//  FETCH DAL SERVER
-// ─────────────────────────────────────────
-async function fetchData() {
-  try {
-    const res = await fetch(`${SERVER_URL}/api/data`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    rawData  = json.data || [];
-    lastFetch = new Date();
-    document.getElementById("statusTag").textContent =
-      "Agg. " + lastFetch.toLocaleTimeString("it-IT", {hour:"2-digit",minute:"2-digit",second:"2-digit"});
-    renderAll();
-  } catch(e) {
-    document.getElementById("statusTag").textContent = "⚠ Errore connessione";
-    if (!rawData.length) {
-      document.getElementById("globalSummary").innerHTML =
-        `<div class="state-box"><div class="icon">⚠️</div><span>Impossibile connettersi al server.<br>Verifica che le VPS stiano inviando i dati.</span></div>`;
-      document.getElementById("vpsList").innerHTML = "";
-    }
-  }
-}
-
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════
 //  HELPERS
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════
+function getEAName(ea) {
+  return eaNames[ea.magic] || ea.name || ("EA #" + ea.magic);
+}
 function fmtPL(n) {
-  const abs = Math.abs(n);
-  const s   = abs >= 1000 ? (abs/1000).toFixed(2)+"K" : abs.toFixed(2);
-  return (n >= 0 ? "+" : "-") + s;
+  const a = Math.abs(n);
+  return (n>=0?"+":"-") + (a>=1000?(a/1000).toFixed(2)+"K":a.toFixed(2));
 }
-function wrColor(w)  { return w>=65?"var(--green)":w>=50?"var(--gold)":"var(--red)"; }
-function pfClass(p)  { return p>=1.7?"pf-h":p>=1.2?"pf-m":"pf-l"; }
-function plClass(n)  { return n>=0?"pos":"neg"; }
+function wrColor(w) { return w>=65?"var(--green)":w>=50?"var(--gold)":"var(--red)"; }
+function pfClass(p) { return p>=1.7?"pf-h":p>=1.2?"pf-m":"pf-l"; }
+function plClass(n) { return n>=0?"pos":"neg"; }
+function getStats(ea){ return ea.stats?.[currentPeriod]||{wr:0,pf:0,pl:0,trades:0}; }
+function isEnabled(vps,acc,magic){ return !disabledEAs[`${vps}_${acc}_${magic}`]; }
 
-function getStats(ea) {
-  return ea.stats?.[currentPeriod] || {wr:0,pf:0,pl:0,trades:0};
-}
-
-function isEAEnabled(vpsName, accNum, magic) {
-  return !disabledEAs[`${vpsName}_${accNum}_${magic}`];
-}
-
-function toggleEA(vpsName, accNum, magic, btn) {
-  const key = `${vpsName}_${accNum}_${magic}`;
-  disabledEAs[key] = !disabledEAs[key];
-  if (!disabledEAs[key]) delete disabledEAs[key];
-  localStorage.setItem("disabledEAs", JSON.stringify(disabledEAs));
-  // aggiorna solo la riga senza ri-renderare tutto
-  const row = btn.closest("tr");
-  btn.className = "ea-toggle" + (isEAEnabled(vpsName,accNum,magic) ? " on" : "");
-  row.className = isEAEnabled(vpsName,accNum,magic) ? "" : "disabled";
-  // ri-renderizza i totali della MT e globale
-  renderAll();
-}
-
-function aggregateEAs(eas, vpsName, accNum) {
-  const enabled = eas.filter(ea => isEAEnabled(vpsName, accNum, ea.magic));
-  if (!enabled.length) return {wr:0,pf:0,pl:0,trades:0};
-  let trades=0,wins=0,gp=0,gl=0,pl=0;
-  enabled.forEach(ea => {
-    const s = getStats(ea);
-    trades += s.trades;
-    wins   += (s.wr/100) * s.trades;
-    pl     += s.pl;
-    // stima gross profit/loss da wr e pf
-    if (s.pf >= 99) { gp += Math.abs(s.pl); }
-    else if (s.pf > 0) {
-      const loss = s.pf > 0 ? Math.abs(s.pl) / (s.pf - 1 + 1/s.pf) : 0;
-      gp += s.pf * loss; gl += loss;
-    }
+function aggregate(eas, vpsName, accNum) {
+  const en = eas.filter(e => isEnabled(vpsName, accNum, e.magic));
+  if(!en.length) return {wr:0,pf:0,pl:0,trades:0};
+  let trades=0,wins=0,pl=0,gp=0,gl=0;
+  en.forEach(ea=>{
+    const s=getStats(ea);
+    trades+=s.trades; wins+=(s.wr/100)*s.trades; pl+=s.pl;
+    if(s.pf>=99){gp+=Math.abs(s.pl);}
+    else if(s.pf>0){const l=Math.abs(s.pl)/(s.pf-1+1/s.pf)||0;gp+=s.pf*l;gl+=l;}
   });
-  const wr = trades > 0 ? wins/trades*100 : 0;
-  const pf = gl > 0 ? gp/gl : (gp > 0 ? 99 : 0);
-  return {wr, pf, pl, trades};
+  return {wr:trades>0?wins/trades*100:0, pf:gl>0?gp/gl:(gp>0?99:0), pl, trades};
 }
 
 function filterAccounts(vps) {
-  if (currentMode === "both") return vps.accounts || [];
-  return (vps.accounts || []).filter(a => a.mode === currentMode);
+  if(currentMode==="both") return vps.accounts||[];
+  return (vps.accounts||[]).filter(a=>a.mode===currentMode);
 }
 
-function aggregateVPS(vps) {
-  const accs = filterAccounts(vps);
-  if (!accs.length) return null;
-  let trades=0,wins=0,pl=0,gp=0,gl=0;
-  accs.forEach(acc => {
-    const a = aggregateEAs(acc.eas||[], vps.vps_name, acc.account_number);
-    trades += a.trades; pl += a.pl;
-    wins   += (a.wr/100)*a.trades;
-  });
-  const wr = trades>0 ? wins/trades*100 : 0;
-  return {wr, pl, trades};
+// ═══════════════════════════════════════════════
+//  FETCH
+// ═══════════════════════════════════════════════
+async function fetchData() {
+  try {
+    const r = await fetch(SERVER_URL+"/api/data",{cache:"no-store"});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const j = await r.json();
+    rawData = j.data||[];
+    const t = new Date();
+    document.getElementById("statusTag").textContent =
+      "Agg. "+t.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    renderAll();
+  } catch(e) {
+    document.getElementById("statusTag").textContent = "⚠ Errore";
+    if(!rawData.length) {
+      document.getElementById("globalSummary").innerHTML =
+        `<div class="state-box"><div class="icon">⚠️</div><span>Impossibile connettersi al server.</span></div>`;
+      document.getElementById("vpsList").innerHTML="";
+    }
+  }
 }
 
-function aggregateGlobal() {
-  let trades=0,wins=0,pl=0;
-  rawData.forEach(vps => {
-    filterAccounts(vps).forEach(acc => {
-      const a = aggregateEAs(acc.eas||[], vps.vps_name, acc.account_number);
-      trades+=a.trades; pl+=a.pl; wins+=(a.wr/100)*a.trades;
-    });
-  });
-  const wr = trades>0 ? wins/trades*100 : 0;
-  return {wr, pl, trades};
-}
-
-// ─────────────────────────────────────────
-//  RENDER GLOBAL SUMMARY
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════
+//  RENDER GLOBAL
+// ═══════════════════════════════════════════════
 function renderGlobal() {
-  const g = aggregateGlobal();
-  const totalVPS  = rawData.length;
-  const totalAccs = rawData.reduce((s,v)=>s+filterAccounts(v).length,0);
-  const totalEAs  = rawData.reduce((s,v)=>s+filterAccounts(v).reduce((ss,a)=>ss+(a.eas||[]).length,0),0);
-
-  document.getElementById("globalSummary").innerHTML = `
+  let trades=0,wins=0,pl=0;
+  rawData.forEach(vps=>filterAccounts(vps).forEach(acc=>{
+    const a=aggregate(acc.eas||[],vps.vps_name,acc.account_number);
+    trades+=a.trades;pl+=a.pl;wins+=(a.wr/100)*a.trades;
+  }));
+  const wr=trades>0?wins/trades*100:0;
+  const totalAccs=rawData.reduce((s,v)=>s+filterAccounts(v).length,0);
+  const totalEAs=rawData.reduce((s,v)=>s+filterAccounts(v).reduce((ss,a)=>ss+(a.eas||[]).length,0),0);
+  document.getElementById("globalSummary").innerHTML=`
     <div class="scard c-accent">
       <div class="scard-label">P&L Totale Globale</div>
-      <div class="scard-val ${plClass(g.pl)}">${fmtPL(g.pl)}</div>
-      <div class="scard-sub">${g.trades} operazioni totali</div>
+      <div class="scard-val ${plClass(pl)}">${fmtPL(pl)}</div>
+      <div class="scard-sub">${trades} operazioni totali</div>
     </div>
     <div class="scard c-green">
       <div class="scard-label">Win Rate Medio</div>
-      <div class="scard-val neu">${g.wr.toFixed(1)}%</div>
+      <div class="scard-val neu">${wr.toFixed(1)}%</div>
       <div class="scard-sub">Pesato per operazioni</div>
     </div>
     <div class="scard c-gold">
       <div class="scard-label">VPS Attive</div>
-      <div class="scard-val acc">${totalVPS}</div>
+      <div class="scard-val acc">${rawData.length}</div>
       <div class="scard-sub">${totalAccs} account · ${totalEAs} EA</div>
-    </div>
-  `;
+    </div>`;
 }
 
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════
 //  RENDER VPS LIST
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════
 function renderVPSList() {
-  const container = document.getElementById("vpsList");
-
-  if (!rawData.length) {
-    container.innerHTML = `<div class="state-box"><div class="icon">📡</div><span>Nessun dato ricevuto dalle VPS.<br>Verifica che gli script sender siano attivi.</span></div>`;
+  const c=document.getElementById("vpsList");
+  if(!rawData.length){
+    c.innerHTML=`<div class="state-box"><div class="icon">📡</div><span>Nessun dato ricevuto dalle VPS.</span></div>`;
     return;
   }
-
-  container.innerHTML = "";
-  rawData.forEach((vps, vi) => {
-    const accounts = filterAccounts(vps);
-    const agg      = aggregateVPS(vps);
-    const isOpen   = !!expandedVps[vps.vps_name];
-
-    const block = document.createElement("div");
-    block.className = "vps-block";
-    block.style.animationDelay = (vi*0.07)+"s";
-
-    const aggHtml = agg ? `
+  c.innerHTML="";
+  rawData.forEach((vps,vi)=>{
+    const accs=filterAccounts(vps);
+    const agg=accs.length?aggregate(accs.flatMap(a=>a.eas||[]),vps.vps_name,"all"):null;
+    const isOpen=!!expandedVps[vps.vps_name];
+    const b=document.createElement("div");
+    b.className="vps-block";
+    b.style.animationDelay=(vi*.07)+"s";
+    const aggH=agg?`
       <div class="mcell"><div class="mcell-label">Win Rate</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'gld':'neg'}">${agg.wr.toFixed(1)}%</div></div>
       <div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plClass(agg.pl)}">${fmtPL(agg.pl)}</div></div>
       <div class="mcell"><div class="mcell-label">Operazioni</div><div class="mcell-val neu">${agg.trades}</div></div>
-      <div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accounts.length}</div></div>
-    ` : `<div style="grid-column:span 4;text-align:right;font-size:12px;color:var(--text3)">Nessun dato per il filtro</div>`;
-
-    block.innerHTML = `
+      <div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accs.length}</div></div>
+    `:`<div style="grid-column:span 4;text-align:right;font-size:11px;color:var(--text3)">Nessun dato</div>`;
+    b.innerHTML=`
       <div class="vps-header ${isOpen?'open':''}" onclick="toggleVPS('${vps.vps_name}',this)">
         <div class="toggle-icon ${isOpen?'open':''}">▶</div>
         <div class="vps-name-group">
           <span class="vps-badge">${vps.vps_name}</span>
-          <div>
-            <div class="vps-name">${vps.vps_name}</div>
-            <div class="vps-meta">${accounts.length} account attivi</div>
-          </div>
+          <div><div class="vps-name">${vps.vps_name}</div><div class="vps-meta">${accs.length} account attivi</div></div>
         </div>
-        ${aggHtml}
+        ${aggH}
       </div>
       <div class="vps-content ${isOpen?'open':''}" id="vc-${vps.vps_name}">
-        ${renderAccountsHTML(vps, accounts)}
-      </div>
-    `;
-    container.appendChild(block);
+        ${accs.length?accs.map(acc=>renderMT(vps,acc)).join(""):'<div class="state-box" style="padding:16px"><span>Nessun account per il filtro.</span></div>'}
+      </div>`;
+    c.appendChild(b);
   });
 }
 
-// ─────────────────────────────────────────
-//  RENDER ACCOUNTS
-// ─────────────────────────────────────────
-function renderAccountsHTML(vps, accounts) {
-  if (!accounts.length) return `<div class="state-box" style="padding:20px"><span>Nessun account per il filtro selezionato.</span></div>`;
-  return accounts.map(acc => {
-    const mtId  = `${vps.vps_name}-${acc.account_number}`;
-    const agg   = aggregateEAs(acc.eas||[], vps.vps_name, acc.account_number);
-    const isOpen = !!expandedMt[mtId];
-    return `
-      <div class="mt-block">
-        <div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)">
-          <div class="toggle-icon ${isOpen?'open':''}">▶</div>
-          <div class="mt-name-group">
-            <span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span>
-            <span class="mt-type">${acc.terminal||'MT4'}</span>
-            <span class="mt-name">#${acc.account_number}</span>
-            <span class="mt-broker">${acc.broker||''}</span>
-          </div>
-          <div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'gld':'neg'}">${agg.wr.toFixed(1)}%</div></div>
-          <div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plClass(agg.pl)}">${fmtPL(agg.pl)}</div></div>
-          <div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div>
-          <div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div>
-        </div>
-        <div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">
-          ${renderEATable(acc.eas||[], vps.vps_name, acc.account_number, acc.currency||'')}
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-// ─────────────────────────────────────────
-//  RENDER EA TABLE
-// ─────────────────────────────────────────
-function renderEATable(eas, vpsName, accNum, currency) {
-  const total = aggregateEAs(eas, vpsName, accNum);
-  const rows  = eas.map(ea => {
-    const s       = getStats(ea);
-    const enabled = isEAEnabled(vpsName, accNum, ea.magic);
-    const dispName = getEAName(ea);
-    const origName = ea.name || ("EA #" + ea.magic);
-    return `
-      <tr class="${enabled?'':'disabled'}">
-        <td>
-          <button class="ea-toggle ${enabled?'on':''}"
-            onclick="toggleEA('${vpsName}',${accNum},${ea.magic},this)"
-            title="${enabled?'Escludi dalle statistiche':'Includi nelle statistiche'}">
-          </button>
-        </td>
-        <td>
-          <div class="ea-name-wrap">
-            <span class="ea-name" onclick="openRename(${ea.magic},'${origName.replace(/'/g,"\\'")}'')"
-              title="Clicca per rinominare">${dispName}</span>
-            ${dispName !== origName ? `<span class="rename-hint">✎</span>` : `<span class="rename-hint" style="opacity:.4">✎</span>`}
-          </div>
-          <div class="ea-magic">Magic: ${ea.magic}</div>
-        </td>
-        <td>
-          <div class="wr-wrap">
-            <div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div>
-            <span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span>
-          </div>
-        </td>
-        <td class="td-r"><span class="pf-pill ${pfClass(s.pf)}">${s.pf.toFixed(2)}</span></td>
-        <td class="td-r">
-          <span class="pl-val ${plClass(s.pl)}">${fmtPL(s.pl)}</span>
-          <div style="font-size:9px;color:var(--text3)">${currency}</div>
-        </td>
-        <td class="td-r" style="color:var(--text2)">${s.trades}</td>
-      </tr>
-    `;
-  }).join("");
-
+function renderMT(vps,acc) {
+  const mtId=`${vps.vps_name}-${acc.account_number}`;
+  const agg=aggregate(acc.eas||[],vps.vps_name,acc.account_number);
+  const isOpen=!!expandedMt[mtId];
   return `
-    <table class="ea-table">
-      <thead>
-        <tr>
-          <th style="width:40px"></th>
-          <th>EA / Magic</th>
-          <th>Win Rate</th>
-          <th class="r">Prof. Factor</th>
-          <th class="r">P&L</th>
-          <th class="r">Trade</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-        <tr class="total-row">
-          <td></td>
-          <td><strong>Totale Account</strong></td>
-          <td>
-            <div class="wr-wrap">
-              <div class="wr-bar"><div class="wr-fill" style="width:${total.wr}%;background:${wrColor(total.wr)}"></div></div>
-              <span class="wr-val" style="color:${wrColor(total.wr)};font-size:13px">${total.wr.toFixed(1)}%</span>
-            </div>
-          </td>
-          <td class="td-r"><span class="pf-pill ${pfClass(total.pf)}">${total.pf.toFixed(2)}</span></td>
-          <td class="td-r"><span class="pl-val ${plClass(total.pl)}" style="font-size:14px">${fmtPL(total.pl)}</span></td>
-          <td class="td-r" style="color:var(--text2)"><strong>${total.trades}</strong></td>
-        </tr>
-      </tbody>
-    </table>
-  `;
+    <div class="mt-block">
+      <div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)">
+        <div class="toggle-icon ${isOpen?'open':''}">▶</div>
+        <div class="mt-name-group">
+          <span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span>
+          <span class="mt-type">${acc.terminal||'MT4'}</span>
+          <span class="mt-name">#${acc.account_number}</span>
+          <span class="mt-broker">${acc.broker||''}</span>
+        </div>
+        <div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'gld':'neg'}">${agg.wr.toFixed(1)}%</div></div>
+        <div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plClass(agg.pl)}">${fmtPL(agg.pl)}</div></div>
+        <div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div>
+        <div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div>
+      </div>
+      <div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">
+        ${renderEATable(acc.eas||[],vps.vps_name,acc.account_number,acc.currency||'')}
+      </div>
+    </div>`;
 }
 
-// ─────────────────────────────────────────
+function renderEATable(eas,vpsName,accNum,currency) {
+  const total=aggregate(eas,vpsName,accNum);
+  const rows=eas.map(ea=>{
+    const s=getStats(ea);
+    const on=isEnabled(vpsName,accNum,ea.magic);
+    return `<tr class="${on?'':'disabled'}">
+      <td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vpsName}',${accNum},${ea.magic},this)"></button></td>
+      <td>
+        <div class="ea-name">${getEAName(ea)}</div>
+        <div class="ea-magic-sub">Magic: ${ea.magic}</div>
+      </td>
+      <td><div class="wr-wrap">
+        <div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div>
+        <span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span>
+      </div></td>
+      <td class="td-r"><span class="pf-pill ${pfClass(s.pf)}">${s.pf.toFixed(2)}</span></td>
+      <td class="td-r"><span class="pl-val ${plClass(s.pl)}">${fmtPL(s.pl)}</span><div style="font-size:8px;color:var(--text3)">${currency}</div></td>
+      <td class="td-r" style="color:var(--text2)">${s.trades}</td>
+    </tr>`;
+  }).join("");
+  return `<table class="ea-table">
+    <thead><tr>
+      <th style="width:36px"></th>
+      <th>EA / Magic</th><th>Win Rate</th>
+      <th class="r">Prof. Factor</th><th class="r">P&L</th><th class="r">Trade</th>
+    </tr></thead>
+    <tbody>${rows}
+      <tr class="total-row">
+        <td></td><td><strong>Totale Account</strong></td>
+        <td><div class="wr-wrap">
+          <div class="wr-bar"><div class="wr-fill" style="width:${total.wr}%;background:${wrColor(total.wr)}"></div></div>
+          <span class="wr-val" style="color:${wrColor(total.wr)};font-size:12px">${total.wr.toFixed(1)}%</span>
+        </div></td>
+        <td class="td-r"><span class="pf-pill ${pfClass(total.pf)}">${total.pf.toFixed(2)}</span></td>
+        <td class="td-r"><span class="pl-val ${plClass(total.pl)}" style="font-size:13px">${fmtPL(total.pl)}</span></td>
+        <td class="td-r" style="color:var(--text2)"><strong>${total.trades}</strong></td>
+      </tr>
+    </tbody></table>`;
+}
+
+// ═══════════════════════════════════════════════
+//  SETTINGS PANEL
+// ═══════════════════════════════════════════════
+function openSettings() {
+  buildSettingsPanel("");
+  document.getElementById("settingsOverlay").classList.add("open");
+}
+
+function closeSettings() {
+  document.getElementById("settingsOverlay").classList.remove("open");
+}
+
+function overlayClick(e) {
+  if(e.target===document.getElementById("settingsOverlay")) closeSettings();
+}
+
+function buildSettingsPanel(filter) {
+  const f = filter.toLowerCase();
+  // Raccogli tutti i magic da rawData
+  const groups = {};
+  rawData.forEach(vps=>{
+    (vps.accounts||[]).forEach(acc=>{
+      const key=`${vps.vps_name} — #${acc.account_number} (${acc.broker||''}) [${acc.mode.toUpperCase()}]`;
+      if(!groups[key]) groups[key]=[];
+      (acc.eas||[]).forEach(ea=>{
+        if(!groups[key].find(e=>e.magic===ea.magic))
+          groups[key].push({magic:ea.magic, autoName:ea.name||("EA #"+ea.magic)});
+      });
+    });
+  });
+
+  // Aggiungi anche i magic dai default non ancora ricevuti
+  const knownMagics = new Set(Object.values(groups).flat().map(e=>e.magic));
+  const extraGroup = "Magic configurati (non ancora ricevuti)";
+  Object.entries(EA_DEFAULTS).forEach(([m,n])=>{
+    if(!knownMagics.has(parseInt(m))){
+      if(!groups[extraGroup]) groups[extraGroup]=[];
+      groups[extraGroup].push({magic:parseInt(m), autoName:n});
+    }
+  });
+
+  let html="";
+  Object.entries(groups).forEach(([groupName, eas])=>{
+    const rows=eas.filter(ea=>{
+      if(!f) return true;
+      const name=(eaNames[ea.magic]||ea.autoName).toLowerCase();
+      return String(ea.magic).includes(f)||name.includes(f);
+    });
+    if(!rows.length) return;
+    html+=`<div class="sp-group"><div class="sp-group-title">${groupName}</div>`;
+    rows.forEach(ea=>{
+      const cur=eaNames[ea.magic]||"";
+      const isModified=cur && cur!==EA_DEFAULTS[ea.magic];
+      html+=`<div class="sp-row" data-magic="${ea.magic}">
+        <span class="sp-magic">${ea.magic}</span>
+        <input class="sp-input ${isModified?'modified':''}" type="text"
+          data-magic="${ea.magic}"
+          data-default="${(EA_DEFAULTS[ea.magic]||ea.autoName).replace(/"/g,'&quot;')}"
+          value="${(eaNames[ea.magic]||EA_DEFAULTS[ea.magic]||ea.autoName).replace(/"/g,'&quot;')}"
+          placeholder="${ea.autoName}"
+          oninput="markModified(this)" />
+        <button class="sp-clear" onclick="clearOne(${ea.magic})" title="Ripristina default">↩</button>
+      </div>`;
+    });
+    html+="</div>";
+  });
+
+  if(!html) html=`<div style="color:var(--text3);font-size:12px;padding:20px 0">Nessun EA trovato.</div>`;
+  document.getElementById("spContent").innerHTML=html;
+}
+
+function filterSettings(val) { buildSettingsPanel(val); }
+
+function markModified(input) {
+  const def = input.dataset.default;
+  input.classList.toggle("modified", input.value !== def && input.value !== "");
+}
+
+function clearOne(magic) {
+  const input = document.querySelector(`.sp-input[data-magic="${magic}"]`);
+  if(input){
+    input.value = EA_DEFAULTS[magic] || input.placeholder;
+    input.classList.remove("modified");
+  }
+}
+
+function saveAllNames() {
+  document.querySelectorAll(".sp-input[data-magic]").forEach(inp=>{
+    const magic = parseInt(inp.dataset.magic);
+    const val   = inp.value.trim();
+    if(val) eaNames[magic]=val;
+    else    delete eaNames[magic];
+  });
+  // Salva solo le differenze dai default
+  const toSave={};
+  Object.entries(eaNames).forEach(([m,n])=>{ if(n!==EA_DEFAULTS[m]) toSave[m]=n; });
+  localStorage.setItem("eaNames", JSON.stringify(toSave));
+  const fb=document.getElementById("saveOk");
+  fb.style.opacity="1";
+  setTimeout(()=>fb.style.opacity="0",2000);
+  renderAll();
+}
+
+function resetAllNames() {
+  if(!confirm("Ripristinare tutti i nomi ai valori default?")) return;
+  localStorage.removeItem("eaNames");
+  eaNames = Object.assign({}, EA_DEFAULTS);
+  buildSettingsPanel("");
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════
 //  INTERAZIONI
-// ─────────────────────────────────────────
-function toggleVPS(name, headerEl) {
-  expandedVps[name] = !expandedVps[name];
-  const content = document.getElementById("vc-"+name);
-  const toggle  = headerEl.querySelector(".toggle-icon");
-  content.classList.toggle("open", expandedVps[name]);
-  toggle.classList.toggle("open",  expandedVps[name]);
-  headerEl.classList.toggle("open",expandedVps[name]);
+// ═══════════════════════════════════════════════
+function toggleVPS(name,el) {
+  expandedVps[name]=!expandedVps[name];
+  document.getElementById("vc-"+name).classList.toggle("open",expandedVps[name]);
+  el.querySelector(".toggle-icon").classList.toggle("open",expandedVps[name]);
+  el.classList.toggle("open",expandedVps[name]);
 }
-
-function toggleMT(id, headerEl) {
-  expandedMt[id] = !expandedMt[id];
-  const ea     = document.getElementById("ea-"+id);
-  const toggle = headerEl.querySelector(".toggle-icon");
-  ea.classList.toggle("open",     expandedMt[id]);
-  toggle.classList.toggle("open", expandedMt[id]);
-  headerEl.classList.toggle("open",expandedMt[id]);
+function toggleMT(id,el) {
+  expandedMt[id]=!expandedMt[id];
+  document.getElementById("ea-"+id).classList.toggle("open",expandedMt[id]);
+  el.querySelector(".toggle-icon").classList.toggle("open",expandedMt[id]);
+  el.classList.toggle("open",expandedMt[id]);
 }
-
+function toggleEA(vps,acc,magic,btn) {
+  const key=`${vps}_${acc}_${magic}`;
+  disabledEAs[key]=!disabledEAs[key];
+  if(!disabledEAs[key]) delete disabledEAs[key];
+  localStorage.setItem("disabledEAs",JSON.stringify(disabledEAs));
+  btn.className="ea-toggle"+(isEnabled(vps,acc,magic)?" on":"");
+  btn.closest("tr").className=isEnabled(vps,acc,magic)?"":"disabled";
+  renderAll();
+}
 function setMode(btn) {
-  currentMode = btn.dataset.mode;
-  document.querySelectorAll("#modeGroup .pill-btn").forEach(b => {
-    b.className = "pill-btn" + (b===btn ? ` active-${currentMode}` : "");
-  });
-  updateFilterLabel(); renderAll();
+  currentMode=btn.dataset.mode;
+  document.querySelectorAll("#modeGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?` active-${currentMode}`:""));
+  updateLabel(); renderAll();
 }
-
 function setPeriod(btn) {
-  currentPeriod = btn.dataset.period;
-  document.querySelectorAll("#timeGroup .pill-btn").forEach(b => {
-    b.className = "pill-btn" + (b===btn ? " active-time" : "");
-  });
-  updateFilterLabel(); renderAll();
+  currentPeriod=btn.dataset.period;
+  document.querySelectorAll("#timeGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?" active-time":""));
+  updateLabel(); renderAll();
 }
-
-function updateFilterLabel() {
-  const p = {all:"Totale","1d":"Giornaliero","7d":"7 Giorni","30d":"30 Giorni"};
-  const m = {both:"Tutti",live:"Solo Live",demo:"Solo Demo"};
-  document.getElementById("filterLabel").textContent = `${p[currentPeriod]} · ${m[currentMode]}`;
+function updateLabel() {
+  const p={all:"Totale","1d":"Giornaliero","7d":"7 Giorni","30d":"30 Giorni"};
+  const m={both:"Tutti",live:"Solo Live",demo:"Solo Demo"};
+  document.getElementById("filterLabel").textContent=`${p[currentPeriod]} · ${m[currentMode]}`;
 }
+function renderAll() { renderGlobal(); renderVPSList(); }
 
-function renderAll() {
-  renderGlobal();
-  renderVPSList();
-}
-
-// ─────────────────────────────────────────
+// ═══════════════════════════════════════════════
 //  INIT
-// ─────────────────────────────────────────
-updateFilterLabel();
+// ═══════════════════════════════════════════════
+updateLabel();
 fetchData();
 setInterval(fetchData, REFRESH_MS);
 </script>
