@@ -279,16 +279,16 @@
     <div class="live-badge">Live</div>
 
     <div class="pill-group" id="modeGroup">
-      <button class="pill-btn active-both" data-mode="both"  onclick="setMode(this)">Tutti</button>
-      <button class="pill-btn"             data-mode="live"  onclick="setMode(this)">Live</button>
+      <button class="pill-btn"            data-mode="both"  onclick="setMode(this)">Tutti</button>
+      <button class="pill-btn active-live" data-mode="live"  onclick="setMode(this)">Live</button>
       <button class="pill-btn"             data-mode="demo"  onclick="setMode(this)">Demo</button>
     </div>
 
     <div class="pill-group" id="timeGroup">
-      <button class="pill-btn"            data-period="1d"  onclick="setPeriod(this)">1G</button>
-      <button class="pill-btn"            data-period="7d"  onclick="setPeriod(this)">7G</button>
-      <button class="pill-btn"            data-period="30d" onclick="setPeriod(this)">30G</button>
-      <button class="pill-btn active-time" data-period="all" onclick="setPeriod(this)">TOT</button>
+      <button class="pill-btn active-time" data-period="1d"  onclick="setPeriod(this)">1G</button>
+      <button class="pill-btn"             data-period="7d"  onclick="setPeriod(this)">7G</button>
+      <button class="pill-btn"             data-period="30d" onclick="setPeriod(this)">30G</button>
+      <button class="pill-btn"             data-period="all" onclick="setPeriod(this)">TOT</button>
     </div>
 
     <span class="status-tag" id="statusTag">Caricamento...</span>
@@ -334,8 +334,8 @@ const REFRESH_MS = 60000;
 // ─────────────────────────────────────────
 //  STATO
 // ─────────────────────────────────────────
-let currentPeriod  = "all";
-let currentMode    = "both";
+let currentPeriod  = "1d";
+let currentMode    = "live";
 let expandedVps    = {};
 let expandedMt     = {};
 let disabledEAs    = JSON.parse(localStorage.getItem("disabledEAs") || "{}");
