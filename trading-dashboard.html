@@ -6,19 +6,18 @@
 <title>VPS Trading Monitor</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#080c12; --bg2:#0e1420; --bg3:#141c2e; --bg4:#1a2438;
-    --border:#1f2d45; --border2:#2a3d5c;
-    --text:#e2eaf7; --text2:#7e9ab8; --text3:#4a6180;
-    --accent:#00d4ff; --green:#00e676; --red:#ff3d5e; --gold:#ffc947;
-    --live:#00e676; --demo:#ffc947; --radius:10px;
+  :root{
+    --bg:#080c12;--bg2:#0e1420;--bg3:#141c2e;--bg4:#1a2438;
+    --border:#1f2d45;--border2:#2a3d5c;
+    --text:#e2eaf7;--text2:#7e9ab8;--text3:#4a6180;
+    --accent:#00d4ff;--green:#00e676;--red:#ff3d5e;--gold:#ffc947;
+    --live:#00e676;--demo:#ffc947;--radius:10px;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
   body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,212,255,.07) 0%,transparent 60%);}
   .app{position:relative;z-index:1;}
 
-  /* HEADER */
   header{background:rgba(14,20,32,.97);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);flex-wrap:wrap;gap:6px;}
   .logo{display:flex;align-items:center;gap:10px;}
   .logo-icon{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--accent),#0099cc);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;}
@@ -38,7 +37,6 @@
   .settings-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;transition:all .2s;}
   .settings-btn:hover{background:var(--bg4);color:var(--accent);border-color:var(--accent);}
 
-  /* MAIN */
   main{padding:18px 20px;max-width:1600px;margin:0 auto;}
   .summary-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:22px;}
   .scard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;position:relative;overflow:hidden;}
@@ -49,14 +47,15 @@
   .scard-label{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:5px;font-weight:700;}
   .scard-val{font-family:'Space Mono',monospace;font-size:21px;font-weight:700;line-height:1;margin-bottom:3px;}
   .scard-sub{font-size:10px;color:var(--text3);}
-  .pos{color:var(--green);} .neg{color:var(--red);} .neu{color:var(--text);} .acc{color:var(--accent);} .gld{color:var(--gold);}
+  .pos{color:var(--green);}.neg{color:var(--red);}.neu{color:var(--text);}.acc{color:var(--accent);}.gld{color:var(--gold);}
+
   .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
   .section-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-weight:700;}
 
-  /* VPS BLOCK */
   .vps-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;animation:fadeUp .4s ease both;}
   .vps-block:hover{border-color:var(--border2);}
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
   .vps-header{display:grid;grid-template-columns:22px 1fr repeat(4,110px) 55px;align-items:center;gap:8px;padding:13px 16px;background:var(--bg3);border-bottom:1px solid transparent;cursor:pointer;user-select:none;transition:background .15s;}
   .vps-header:hover{background:var(--bg4);}
   .vps-header.open{border-bottom-color:var(--border);}
@@ -69,10 +68,10 @@
   .mcell{text-align:right;}
   .mcell-label{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:2px;font-weight:600;}
   .mcell-val{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;}
+
   .vps-content{display:none;padding:10px;gap:9px;flex-direction:column;}
   .vps-content.open{display:flex;}
 
-  /* MT BLOCK */
   .mt-block{background:var(--bg);border:1px solid var(--border);border-radius:5px;overflow:hidden;}
   .mt-header{display:grid;grid-template-columns:22px 1fr repeat(4,95px) 55px;align-items:center;gap:8px;padding:9px 13px;cursor:pointer;transition:background .15s;border-bottom:1px solid transparent;}
   .mt-header:hover{background:var(--bg4);}
@@ -84,10 +83,9 @@
   .mt-type{font-size:9px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-weight:600;}
   .mt-name{font-size:12px;font-weight:500;}
   .mt-broker{font-size:10px;color:var(--text3);}
+
   .ea-container{display:none;overflow-x:auto;}
   .ea-container.open{display:block;}
-
-  /* EA TABLE */
   .ea-table{width:100%;border-collapse:collapse;}
   .ea-table th{padding:6px 11px;text-align:left;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;background:rgba(8,12,18,.5);border-bottom:1px solid var(--border);white-space:nowrap;}
   .ea-table th.r{text-align:right;}
@@ -113,28 +111,23 @@
   .ea-toggle.on::after{transform:translateX(11px);}
   .total-row td{background:rgba(0,212,255,.04);border-top:1px solid rgba(0,212,255,.12);font-weight:600;}
 
-  /* STATE BOX */
   .state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;gap:10px;color:var(--text3);font-size:13px;text-align:center;}
-  .state-box .icon{font-size:32px;}
   .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ── SETTINGS PANEL ── */
+  /* SETTINGS */
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto;}
   .overlay.open{display:flex;}
   .settings-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:680px;max-width:96vw;margin-bottom:40px;display:flex;flex-direction:column;max-height:85vh;}
   .sp-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;}
   .sp-head h2{font-size:15px;font-weight:700;margin-bottom:3px;}
   .sp-head p{font-size:11px;color:var(--text3);}
-  .sp-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px;line-height:1;}
-  .sp-close:hover{color:var(--text);}
+  .sp-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px;}
   .sp-body{overflow-y:auto;flex:1;padding:16px 24px;}
   .sp-search{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:12px;padding:8px 14px;outline:none;margin-bottom:16px;}
   .sp-search:focus{border-color:var(--accent);}
-
   .sp-group{margin-bottom:20px;}
   .sp-group-title{font-family:'Space Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
-
   .sp-row{display:grid;grid-template-columns:100px 1fr 32px;align-items:center;gap:8px;padding:5px 0;}
   .sp-magic{font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);}
   .sp-input{background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;padding:5px 10px;outline:none;width:100%;transition:border-color .2s;}
@@ -142,30 +135,22 @@
   .sp-input.modified{border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.04);}
   .sp-clear{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px;border-radius:3px;transition:color .2s;}
   .sp-clear:hover{color:var(--red);}
-
   .sp-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg3);border-radius:0 0 14px 14px;}
   .btn-save-all{background:var(--accent);color:#000;border:none;border-radius:7px;padding:8px 22px;font-weight:700;font-size:12px;cursor:pointer;}
-  .btn-save-all:hover{opacity:.85;}
   .btn-reset-all{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline;}
   .save-ok{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;}
 
-  /* RESPONSIVE */
   @media(max-width:1000px){.vps-header{grid-template-columns:22px 1fr repeat(3,95px)}.mt-header{grid-template-columns:22px 1fr repeat(3,85px)}}
-  @media(max-width:680px){header{height:auto;padding:8px 14px;}main{padding:12px 12px;}.summary-bar{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:22px 1fr repeat(2,80px)}.mt-header{grid-template-columns:22px 1fr repeat(2,75px)}}
-
+  @media(max-width:680px){header{height:auto;padding:8px 14px;}main{padding:12px;}.summary-bar{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:22px 1fr repeat(2,80px)}.mt-header{grid-template-columns:22px 1fr repeat(2,75px)}}
   footer{text-align:center;padding:24px;color:var(--text3);font-size:10px;border-top:1px solid var(--border);margin-top:14px;}
 </style>
 </head>
 <body>
 <div class="app">
-
 <header>
   <div class="logo">
     <div class="logo-icon">VT</div>
-    <div>
-      <div class="logo-text">VPS TRADING MONITOR</div>
-      <div class="logo-sub">Multi-VPS EA Dashboard</div>
-    </div>
+    <div><div class="logo-text">VPS TRADING MONITOR</div><div class="logo-sub">Multi-VPS EA Dashboard</div></div>
   </div>
   <div class="header-right">
     <div class="live-badge">Live</div>
@@ -175,10 +160,10 @@
       <button class="pill-btn"             data-mode="demo" onclick="setMode(this)">Demo</button>
     </div>
     <div class="pill-group" id="timeGroup">
-      <button class="pill-btn active-time" data-period="1d"  onclick="setPeriod(this)">1G</button>
-      <button class="pill-btn"             data-period="7d"  onclick="setPeriod(this)">7G</button>
-      <button class="pill-btn"             data-period="30d" onclick="setPeriod(this)">30G</button>
-      <button class="pill-btn"             data-period="all" onclick="setPeriod(this)">TOT</button>
+      <button class="pill-btn active-time" data-hours="24"   onclick="setPeriod(this)">24H</button>
+      <button class="pill-btn"             data-hours="168"  onclick="setPeriod(this)">7G</button>
+      <button class="pill-btn"             data-hours="720"  onclick="setPeriod(this)">30G</button>
+      <button class="pill-btn"             data-hours="0"    onclick="setPeriod(this)">TOT</button>
     </div>
     <span class="status-tag" id="statusTag">Caricamento...</span>
     <button class="settings-btn" onclick="openSettings()">⚙ Nomi EA</button>
@@ -195,26 +180,22 @@
   </div>
   <div id="vpsList"></div>
 </main>
-
-<footer>VPS Trading Monitor · Aggiornamento automatico ogni 60s</footer>
+<footer>VPS Trading Monitor · Aggiornamento automatico ogni 60s · Filtri calcolati in tempo reale</footer>
 </div>
 
-<!-- SETTINGS PANEL -->
-<div class="overlay" id="settingsOverlay" onclick="overlayClick(event)">
+<!-- SETTINGS -->
+<div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
   <div class="settings-panel">
     <div class="sp-head">
-      <div>
-        <h2>⚙ Gestione Nomi EA</h2>
-        <p>Modifica i nomi visualizzati per ogni Magic Number · salvati nel browser</p>
-      </div>
+      <div><h2>⚙ Gestione Nomi EA</h2><p>Modifica i nomi per ogni Magic Number · salvati nel browser</p></div>
       <button class="sp-close" onclick="closeSettings()">✕</button>
     </div>
     <div class="sp-body">
-      <input class="sp-search" type="text" placeholder="🔍 Cerca magic o nome..." oninput="filterSettings(this.value)" />
+      <input class="sp-search" type="text" placeholder="🔍 Cerca magic o nome..." oninput="buildSettings(this.value)"/>
       <div id="spContent"></div>
     </div>
     <div class="sp-foot">
-      <button class="btn-reset-all" onclick="resetAllNames()">Ripristina tutti i default</button>
+      <button class="btn-reset-all" onclick="resetAllNames()">Ripristina default</button>
       <span class="save-ok" id="saveOk">✓ Salvato!</span>
       <button class="btn-save-all" onclick="saveAllNames()">💾 Salva tutto</button>
     </div>
@@ -222,111 +203,140 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  CONFIG
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 const SERVER_URL = "https://vps-trading-monitor.onrender.com";
 const REFRESH_MS = 60000;
 
-// ── NOMI EA DI DEFAULT (magic → nome) ──────────
-// Questi sono i tuoi nomi reali — puoi cambiarli
-// anche dal pannello ⚙ Nomi EA nella dashboard
+// Nomi EA di default (magic → nome)
 const EA_DEFAULTS = {
-  // VPS-01
-  234806: "Titany / Titany X AXI PRO",
-  99999:  "TradeCopier",
-  // VPS-02 — FTMO
-  164806: "TitanyX Pro",
-  // VPS-02 — Ultima Markets EA Personali (#17035723)
-  220150:  "X2201-fisso",
-  400012:  "Battle-EA-LIVE",
-  2201503: "X2201-auto-lot",
-  100451:  "Battle-v3.5.3",
-  // VPS-02 — Demo Battle (#4168649)
-  1004492: "Battle-v3.3.3",
-  100449:  "Battle-v3.4.1",
-  // VPS-02 — Demo X2201 (#4160677)
-  2201502: "X2201-h24",
-  220160:  "X2201-v1.6",
+  234806:"Titany / Titany X AXI PRO",
+  99999:"TradeCopier",
+  164806:"TitanyX Pro",
+  220150:"X2201-fisso",
+  400012:"Battle-EA-LIVE",
+  2201503:"X2201-auto-lot",
+  100451:"Battle-v3.5.3",
+  1004492:"Battle-v3.3.3",
+  100449:"Battle-v3.4.1",
+  2201502:"X2201-h24",
+  220160:"X2201-v1.6",
 };
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  STATO
-// ═══════════════════════════════════════════════
-let currentPeriod = "1d";
+// ═══════════════════════════════════════════
+let currentHours  = 24;   // 0 = tutto lo storico
 let currentMode   = "live";
 let expandedVps   = {};
 let expandedMt    = {};
-let disabledEAs   = JSON.parse(localStorage.getItem("disabledEAs") || "{}");
-// Nomi personalizzati: partono dai default, sovrascrivibili dall'utente
-let eaNames       = Object.assign({}, EA_DEFAULTS, JSON.parse(localStorage.getItem("eaNames") || "{}"));
+let disabledEAs   = JSON.parse(localStorage.getItem("disabledEAs")||"{}");
+let eaNames       = Object.assign({},EA_DEFAULTS,JSON.parse(localStorage.getItem("eaNames")||"{}"));
 let rawData       = [];
 
-// ═══════════════════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════════════════
-function getEAName(ea) {
-  return eaNames[ea.magic] || ea.name || ("EA #" + ea.magic);
+// ═══════════════════════════════════════════
+//  FILTRO TEMPORALE — calcolato lato browser
+//  usa l'ora locale del browser (non del broker)
+// ═══════════════════════════════════════════
+function getCutoff() {
+  if(currentHours===0) return 0;
+  // Timestamp Unix in secondi
+  return Math.floor(Date.now()/1000) - currentHours*3600;
 }
-function fmtPL(n) {
-  const a = Math.abs(n);
-  return (n>=0?"+":"-") + (a>=1000?(a/1000).toFixed(2)+"K":a.toFixed(2));
-}
-function wrColor(w) { return w>=65?"var(--green)":w>=50?"var(--gold)":"var(--red)"; }
-function pfClass(p) { return p>=1.7?"pf-h":p>=1.2?"pf-m":"pf-l"; }
-function plClass(n) { return n>=0?"pos":"neg"; }
-function getStats(ea){ return ea.stats?.[currentPeriod]||{wr:0,pf:0,pl:0,trades:0}; }
-function isEnabled(vps,acc,magic){ return !disabledEAs[`${vps}_${acc}_${magic}`]; }
 
-function aggregate(eas, vpsName, accNum) {
-  const en = eas.filter(e => isEnabled(vpsName, accNum, e.magic));
-  if(!en.length) return {wr:0,pf:0,pl:0,trades:0};
-  let trades=0,wins=0,pl=0,gp=0,gl=0;
-  en.forEach(ea=>{
-    const s=getStats(ea);
-    trades+=s.trades; wins+=(s.wr/100)*s.trades; pl+=s.pl;
-    if(s.pf>=99){gp+=Math.abs(s.pl);}
-    else if(s.pf>0){const l=Math.abs(s.pl)/(s.pf-1+1/s.pf)||0;gp+=s.pf*l;gl+=l;}
+// ═══════════════════════════════════════════
+//  CALCOLA STATISTICHE DA TRADE GREZZI
+// ═══════════════════════════════════════════
+function calcStats(trades, magic, cutoff, disabled) {
+  // trades = array di {t, m, p, w}
+  // filtra per magic, periodo, e se abilitato
+  if(disabled) return {wr:0,pf:0,pl:0,trades:0};
+  const filtered = trades.filter(t =>
+    (magic===null || t.m===magic) && (cutoff===0 || t.t>=cutoff)
+  );
+  if(!filtered.length) return {wr:0,pf:0,pl:0,trades:0};
+  let wins=0, pl=0, gp=0, gl=0;
+  filtered.forEach(t=>{
+    pl+=t.p;
+    if(t.w){wins++;gp+=t.p;}
+    else gl+=Math.abs(t.p);
   });
-  return {wr:trades>0?wins/trades*100:0, pf:gl>0?gp/gl:(gp>0?99:0), pl, trades};
+  return {
+    wr: wins/filtered.length*100,
+    pf: gl>0?gp/gl:(gp>0?99:0),
+    pl,
+    trades: filtered.length
+  };
 }
 
-function filterAccounts(vps) {
+function calcAccountStats(trades, eas, vpsName, accNum, cutoff) {
+  // Aggrega solo gli EA abilitati
+  const enabledTrades = trades.filter(t=>{
+    const key=`${vpsName}_${accNum}_${t.m}`;
+    return !disabledEAs[key];
+  }).filter(t => cutoff===0 || t.t>=cutoff);
+
+  if(!enabledTrades.length) return {wr:0,pf:0,pl:0,trades:0};
+  let wins=0,pl=0,gp=0,gl=0;
+  enabledTrades.forEach(t=>{
+    pl+=t.p;
+    if(t.w){wins++;gp+=t.p;}
+    else gl+=Math.abs(t.p);
+  });
+  return {
+    wr:wins/enabledTrades.length*100,
+    pf:gl>0?gp/gl:(gp>0?99:0),
+    pl, trades:enabledTrades.length
+  };
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function getEAName(magic,autoName){return eaNames[magic]||autoName||("EA #"+magic);}
+function fmtPL(n){const a=Math.abs(n);return(n>=0?"+":"-")+(a>=1000?(a/1000).toFixed(2)+"K":a.toFixed(2));}
+function wrColor(w){return w>=65?"var(--green)":w>=50?"var(--gold)":"var(--red)";}
+function pfClass(p){return p>=1.7?"pf-h":p>=1.2?"pf-m":"pf-l";}
+function plClass(n){return n>=0?"pos":"neg";}
+function isEnabled(vps,acc,magic){return !disabledEAs[`${vps}_${acc}_${magic}`];}
+function filterAccounts(vps){
   if(currentMode==="both") return vps.accounts||[];
   return (vps.accounts||[]).filter(a=>a.mode===currentMode);
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  FETCH
-// ═══════════════════════════════════════════════
-async function fetchData() {
-  try {
-    const r = await fetch(SERVER_URL+"/api/data",{cache:"no-store"});
+// ═══════════════════════════════════════════
+async function fetchData(){
+  try{
+    const r=await fetch(SERVER_URL+"/api/data",{cache:"no-store"});
     if(!r.ok) throw new Error("HTTP "+r.status);
-    const j = await r.json();
-    rawData = j.data||[];
-    const t = new Date();
-    document.getElementById("statusTag").textContent =
+    const j=await r.json();
+    rawData=j.data||[];
+    const t=new Date();
+    document.getElementById("statusTag").textContent=
       "Agg. "+t.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     renderAll();
-  } catch(e) {
-    document.getElementById("statusTag").textContent = "⚠ Errore";
-    if(!rawData.length) {
-      document.getElementById("globalSummary").innerHTML =
-        `<div class="state-box"><div class="icon">⚠️</div><span>Impossibile connettersi al server.</span></div>`;
+  }catch(e){
+    document.getElementById("statusTag").textContent="⚠ Errore";
+    if(!rawData.length){
+      document.getElementById("globalSummary").innerHTML=
+        `<div class="state-box"><span>⚠️ Impossibile connettersi al server.</span></div>`;
       document.getElementById("vpsList").innerHTML="";
     }
   }
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  RENDER GLOBAL
-// ═══════════════════════════════════════════════
-function renderGlobal() {
+// ═══════════════════════════════════════════
+function renderGlobal(){
+  const cutoff=getCutoff();
   let trades=0,wins=0,pl=0;
   rawData.forEach(vps=>filterAccounts(vps).forEach(acc=>{
-    const a=aggregate(acc.eas||[],vps.vps_name,acc.account_number);
-    trades+=a.trades;pl+=a.pl;wins+=(a.wr/100)*a.trades;
+    const s=calcAccountStats(acc.trades||[],acc.eas||[],vps.vps_name,acc.account_number,cutoff);
+    trades+=s.trades;pl+=s.pl;wins+=(s.wr/100)*s.trades;
   }));
   const wr=trades>0?wins/trades*100:0;
   const totalAccs=rawData.reduce((s,v)=>s+filterAccounts(v).length,0);
@@ -349,29 +359,30 @@ function renderGlobal() {
     </div>`;
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  RENDER VPS LIST
-// ═══════════════════════════════════════════════
-function renderVPSList() {
+// ═══════════════════════════════════════════
+function renderVPSList(){
   const c=document.getElementById("vpsList");
   if(!rawData.length){
-    c.innerHTML=`<div class="state-box"><div class="icon">📡</div><span>Nessun dato ricevuto dalle VPS.</span></div>`;
+    c.innerHTML=`<div class="state-box"><span>📡 Nessun dato ricevuto dalle VPS.</span></div>`;
     return;
   }
   c.innerHTML="";
+  const cutoff=getCutoff();
   rawData.forEach((vps,vi)=>{
     const accs=filterAccounts(vps);
-    const agg=accs.length?aggregate(accs.flatMap(a=>a.eas||[]),vps.vps_name,"all"):null;
+    const allTrades=accs.flatMap(a=>a.trades||[]);
+    const agg=calcAccountStats(allTrades,[],vps.vps_name,"all",cutoff);
     const isOpen=!!expandedVps[vps.vps_name];
     const b=document.createElement("div");
     b.className="vps-block";
     b.style.animationDelay=(vi*.07)+"s";
-    const aggH=agg?`
+    const aggH=`
       <div class="mcell"><div class="mcell-label">Win Rate</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'gld':'neg'}">${agg.wr.toFixed(1)}%</div></div>
       <div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plClass(agg.pl)}">${fmtPL(agg.pl)}</div></div>
       <div class="mcell"><div class="mcell-label">Operazioni</div><div class="mcell-val neu">${agg.trades}</div></div>
-      <div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accs.length}</div></div>
-    `:`<div style="grid-column:span 4;text-align:right;font-size:11px;color:var(--text3)">Nessun dato</div>`;
+      <div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accs.length}</div></div>`;
     b.innerHTML=`
       <div class="vps-header ${isOpen?'open':''}" onclick="toggleVPS('${vps.vps_name}',this)">
         <div class="toggle-icon ${isOpen?'open':''}">▶</div>
@@ -382,15 +393,16 @@ function renderVPSList() {
         ${aggH}
       </div>
       <div class="vps-content ${isOpen?'open':''}" id="vc-${vps.vps_name}">
-        ${accs.length?accs.map(acc=>renderMT(vps,acc)).join(""):'<div class="state-box" style="padding:16px"><span>Nessun account per il filtro.</span></div>'}
+        ${accs.length?accs.map(acc=>renderMT(vps,acc,cutoff)).join("")
+          :'<div class="state-box" style="padding:16px"><span>Nessun account per il filtro.</span></div>'}
       </div>`;
     c.appendChild(b);
   });
 }
 
-function renderMT(vps,acc) {
+function renderMT(vps,acc,cutoff){
   const mtId=`${vps.vps_name}-${acc.account_number}`;
-  const agg=aggregate(acc.eas||[],vps.vps_name,acc.account_number);
+  const agg=calcAccountStats(acc.trades||[],acc.eas||[],vps.vps_name,acc.account_number,cutoff);
   const isOpen=!!expandedMt[mtId];
   return `
     <div class="mt-block">
@@ -408,20 +420,20 @@ function renderMT(vps,acc) {
         <div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div>
       </div>
       <div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">
-        ${renderEATable(acc.eas||[],vps.vps_name,acc.account_number,acc.currency||'')}
+        ${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'',cutoff)}
       </div>
     </div>`;
 }
 
-function renderEATable(eas,vpsName,accNum,currency) {
-  const total=aggregate(eas,vpsName,accNum);
+function renderEATable(eas,trades,vpsName,accNum,currency,cutoff){
+  const total=calcAccountStats(trades,eas,vpsName,accNum,cutoff);
   const rows=eas.map(ea=>{
-    const s=getStats(ea);
     const on=isEnabled(vpsName,accNum,ea.magic);
+    const s=calcStats(trades,ea.magic,cutoff,!on);
     return `<tr class="${on?'':'disabled'}">
       <td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vpsName}',${accNum},${ea.magic},this)"></button></td>
       <td>
-        <div class="ea-name">${getEAName(ea)}</div>
+        <div class="ea-name">${getEAName(ea.magic,ea.name)}</div>
         <div class="ea-magic-sub">Magic: ${ea.magic}</div>
       </td>
       <td><div class="wr-wrap">
@@ -435,8 +447,7 @@ function renderEATable(eas,vpsName,accNum,currency) {
   }).join("");
   return `<table class="ea-table">
     <thead><tr>
-      <th style="width:36px"></th>
-      <th>EA / Magic</th><th>Win Rate</th>
+      <th style="width:36px"></th><th>EA / Magic</th><th>Win Rate</th>
       <th class="r">Prof. Factor</th><th class="r">P&L</th><th class="r">Trade</th>
     </tr></thead>
     <tbody>${rows}
@@ -453,133 +464,100 @@ function renderEATable(eas,vpsName,accNum,currency) {
     </tbody></table>`;
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  SETTINGS PANEL
-// ═══════════════════════════════════════════════
-function openSettings() {
-  buildSettingsPanel("");
-  document.getElementById("settingsOverlay").classList.add("open");
-}
+// ═══════════════════════════════════════════
+function openSettings(){buildSettings("");document.getElementById("settingsOverlay").classList.add("open");}
+function closeSettings(){document.getElementById("settingsOverlay").classList.remove("open");}
 
-function closeSettings() {
-  document.getElementById("settingsOverlay").classList.remove("open");
-}
-
-function overlayClick(e) {
-  if(e.target===document.getElementById("settingsOverlay")) closeSettings();
-}
-
-function buildSettingsPanel(filter) {
-  const f = filter.toLowerCase();
-  // Raccogli tutti i magic da rawData
-  const groups = {};
+function buildSettings(filter){
+  const f=filter.toLowerCase();
+  const groups={};
   rawData.forEach(vps=>{
     (vps.accounts||[]).forEach(acc=>{
       const key=`${vps.vps_name} — #${acc.account_number} (${acc.broker||''}) [${acc.mode.toUpperCase()}]`;
       if(!groups[key]) groups[key]=[];
       (acc.eas||[]).forEach(ea=>{
         if(!groups[key].find(e=>e.magic===ea.magic))
-          groups[key].push({magic:ea.magic, autoName:ea.name||("EA #"+ea.magic)});
+          groups[key].push({magic:ea.magic,autoName:ea.name||("EA #"+ea.magic)});
       });
     });
   });
-
-  // Aggiungi anche i magic dai default non ancora ricevuti
-  const knownMagics = new Set(Object.values(groups).flat().map(e=>e.magic));
-  const extraGroup = "Magic configurati (non ancora ricevuti)";
+  // Aggiungi default non ancora ricevuti
+  const known=new Set(Object.values(groups).flat().map(e=>e.magic));
+  const extra="Magic configurati (non ancora ricevuti)";
   Object.entries(EA_DEFAULTS).forEach(([m,n])=>{
-    if(!knownMagics.has(parseInt(m))){
-      if(!groups[extraGroup]) groups[extraGroup]=[];
-      groups[extraGroup].push({magic:parseInt(m), autoName:n});
+    if(!known.has(parseInt(m))){
+      if(!groups[extra]) groups[extra]=[];
+      groups[extra].push({magic:parseInt(m),autoName:n});
     }
   });
-
   let html="";
-  Object.entries(groups).forEach(([groupName, eas])=>{
+  Object.entries(groups).forEach(([gName,eas])=>{
     const rows=eas.filter(ea=>{
       if(!f) return true;
-      const name=(eaNames[ea.magic]||ea.autoName).toLowerCase();
-      return String(ea.magic).includes(f)||name.includes(f);
+      return String(ea.magic).includes(f)||(eaNames[ea.magic]||ea.autoName).toLowerCase().includes(f);
     });
     if(!rows.length) return;
-    html+=`<div class="sp-group"><div class="sp-group-title">${groupName}</div>`;
+    html+=`<div class="sp-group"><div class="sp-group-title">${gName}</div>`;
     rows.forEach(ea=>{
-      const cur=eaNames[ea.magic]||"";
-      const isModified=cur && cur!==EA_DEFAULTS[ea.magic];
-      html+=`<div class="sp-row" data-magic="${ea.magic}">
+      const cur=eaNames[ea.magic]||EA_DEFAULTS[ea.magic]||ea.autoName;
+      const isDef=cur===(EA_DEFAULTS[ea.magic]||ea.autoName);
+      html+=`<div class="sp-row">
         <span class="sp-magic">${ea.magic}</span>
-        <input class="sp-input ${isModified?'modified':''}" type="text"
-          data-magic="${ea.magic}"
+        <input class="sp-input ${isDef?'':'modified'}" type="text" data-magic="${ea.magic}"
           data-default="${(EA_DEFAULTS[ea.magic]||ea.autoName).replace(/"/g,'&quot;')}"
-          value="${(eaNames[ea.magic]||EA_DEFAULTS[ea.magic]||ea.autoName).replace(/"/g,'&quot;')}"
-          placeholder="${ea.autoName}"
-          oninput="markModified(this)" />
-        <button class="sp-clear" onclick="clearOne(${ea.magic})" title="Ripristina default">↩</button>
+          value="${cur.replace(/"/g,'&quot;')}"
+          placeholder="${ea.autoName}" oninput="markMod(this)"/>
+        <button class="sp-clear" onclick="clearOne(${ea.magic})" title="Ripristina">↩</button>
       </div>`;
     });
     html+="</div>";
   });
-
-  if(!html) html=`<div style="color:var(--text3);font-size:12px;padding:20px 0">Nessun EA trovato.</div>`;
-  document.getElementById("spContent").innerHTML=html;
+  document.getElementById("spContent").innerHTML=html||`<div style="color:var(--text3);padding:20px 0;font-size:12px">Nessun EA trovato.</div>`;
 }
 
-function filterSettings(val) { buildSettingsPanel(val); }
-
-function markModified(input) {
-  const def = input.dataset.default;
-  input.classList.toggle("modified", input.value !== def && input.value !== "");
+function markMod(inp){inp.classList.toggle("modified",inp.value!==inp.dataset.default&&inp.value!=="");}
+function clearOne(magic){
+  const inp=document.querySelector(`.sp-input[data-magic="${magic}"]`);
+  if(inp){inp.value=inp.dataset.default;inp.classList.remove("modified");}
 }
-
-function clearOne(magic) {
-  const input = document.querySelector(`.sp-input[data-magic="${magic}"]`);
-  if(input){
-    input.value = EA_DEFAULTS[magic] || input.placeholder;
-    input.classList.remove("modified");
-  }
-}
-
-function saveAllNames() {
+function saveAllNames(){
   document.querySelectorAll(".sp-input[data-magic]").forEach(inp=>{
-    const magic = parseInt(inp.dataset.magic);
-    const val   = inp.value.trim();
-    if(val) eaNames[magic]=val;
-    else    delete eaNames[magic];
+    const m=parseInt(inp.dataset.magic);
+    const v=inp.value.trim();
+    if(v) eaNames[m]=v; else delete eaNames[m];
   });
-  // Salva solo le differenze dai default
   const toSave={};
-  Object.entries(eaNames).forEach(([m,n])=>{ if(n!==EA_DEFAULTS[m]) toSave[m]=n; });
-  localStorage.setItem("eaNames", JSON.stringify(toSave));
+  Object.entries(eaNames).forEach(([m,n])=>{if(n!==EA_DEFAULTS[m])toSave[m]=n;});
+  localStorage.setItem("eaNames",JSON.stringify(toSave));
   const fb=document.getElementById("saveOk");
-  fb.style.opacity="1";
-  setTimeout(()=>fb.style.opacity="0",2000);
+  fb.style.opacity="1";setTimeout(()=>fb.style.opacity="0",2000);
   renderAll();
 }
-
-function resetAllNames() {
+function resetAllNames(){
   if(!confirm("Ripristinare tutti i nomi ai valori default?")) return;
   localStorage.removeItem("eaNames");
-  eaNames = Object.assign({}, EA_DEFAULTS);
-  buildSettingsPanel("");
-  renderAll();
+  eaNames=Object.assign({},EA_DEFAULTS);
+  buildSettings("");renderAll();
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  INTERAZIONI
-// ═══════════════════════════════════════════════
-function toggleVPS(name,el) {
+// ═══════════════════════════════════════════
+function toggleVPS(name,el){
   expandedVps[name]=!expandedVps[name];
   document.getElementById("vc-"+name).classList.toggle("open",expandedVps[name]);
   el.querySelector(".toggle-icon").classList.toggle("open",expandedVps[name]);
   el.classList.toggle("open",expandedVps[name]);
 }
-function toggleMT(id,el) {
+function toggleMT(id,el){
   expandedMt[id]=!expandedMt[id];
   document.getElementById("ea-"+id).classList.toggle("open",expandedMt[id]);
   el.querySelector(".toggle-icon").classList.toggle("open",expandedMt[id]);
   el.classList.toggle("open",expandedMt[id]);
 }
-function toggleEA(vps,acc,magic,btn) {
+function toggleEA(vps,acc,magic,btn){
   const key=`${vps}_${acc}_${magic}`;
   disabledEAs[key]=!disabledEAs[key];
   if(!disabledEAs[key]) delete disabledEAs[key];
@@ -588,29 +566,29 @@ function toggleEA(vps,acc,magic,btn) {
   btn.closest("tr").className=isEnabled(vps,acc,magic)?"":"disabled";
   renderAll();
 }
-function setMode(btn) {
+function setMode(btn){
   currentMode=btn.dataset.mode;
   document.querySelectorAll("#modeGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?` active-${currentMode}`:""));
-  updateLabel(); renderAll();
+  updateLabel();renderAll();
 }
-function setPeriod(btn) {
-  currentPeriod=btn.dataset.period;
+function setPeriod(btn){
+  currentHours=parseInt(btn.dataset.hours);
   document.querySelectorAll("#timeGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?" active-time":""));
-  updateLabel(); renderAll();
+  updateLabel();renderAll();
 }
-function updateLabel() {
-  const p={all:"Totale","1d":"Giornaliero","7d":"7 Giorni","30d":"30 Giorni"};
+function updateLabel(){
+  const p={24:"Ultime 24H",168:"Ultimi 7 Giorni",720:"Ultimi 30 Giorni",0:"Tutto lo storico"};
   const m={both:"Tutti",live:"Solo Live",demo:"Solo Demo"};
-  document.getElementById("filterLabel").textContent=`${p[currentPeriod]} · ${m[currentMode]}`;
+  document.getElementById("filterLabel").textContent=`${p[currentHours]} · ${m[currentMode]}`;
 }
-function renderAll() { renderGlobal(); renderVPSList(); }
+function renderAll(){renderGlobal();renderVPSList();}
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  INIT
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 updateLabel();
 fetchData();
-setInterval(fetchData, REFRESH_MS);
+setInterval(fetchData,REFRESH_MS);
 </script>
 </body>
 </html>
