@@ -379,18 +379,25 @@ function getEAName(magic, autoName){
   return userNames[k] || EA_DEFAULTS[magic] || autoName || ("EA #" + magic);
 }
 
-// Carica nomi dal server (sovrascrive localStorage con la versione cloud)
+// Sincronizza nomi con il server ad ogni apertura
 async function syncNamesFromServer(){
   try{
     const r = await fetch(SERVER_URL + "/api/names", {cache:"no-store"});
     if(!r.ok) return;
     const j = await r.json();
-    if(j.names && typeof j.names === "object"){
-      // Merge: il server è autoritativo, ma mantieni eventuali chiavi locali non ancora inviate
-      Object.entries(j.names).forEach(([k,v])=>{ if(v) userNames[String(k)]=String(v); });
+    const serverNames = (j.names && typeof j.names === "object") ? j.names : {};
+    const serverCount = Object.keys(serverNames).length;
+    const localCount  = Object.keys(userNames).length;
+
+    if(serverCount > localCount){
+      // Il server ha più nomi (un altro dispositivo ha salvato dopo di noi) — prendiamo i suoi
+      Object.entries(serverNames).forEach(([k,v])=>{ if(v) userNames[String(k)]=String(v); });
       localStorage.setItem("eaNames", JSON.stringify(userNames));
+    } else if(localCount > 0){
+      // Noi abbiamo più nomi (server appena riavviato o mai sincronizzato) — rispediamo i nostri
+      await syncNamesToServer();
     }
-  }catch(e){ /* server offline o sleep — usa localStorage */ }
+  }catch(e){ /* server in sleep o offline — localStorage è il backup */ }
 }
 
 // Salva nomi sul server (non blocca l'UI)
