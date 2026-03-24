@@ -352,18 +352,20 @@ function saveDisabled(){
   localStorage.setItem("disabledVPS", JSON.stringify(disabledVPS));
 }
 // ── EA Names ─────────────────────────────────────────────────────────────────
-function loadEANames(){
-  // Carica i default con chiavi stringa
-  const names={};
-  Object.entries(EA_DEFAULTS).forEach(([k,v])=>{ names[String(k)]=v; });
-  // Sovrascrive con quanto salvato dall'utente
-  try{
-    const saved=JSON.parse(localStorage.getItem("eaNames")||"{}");
-    Object.entries(saved).forEach(([k,v])=>{ if(v) names[String(k)]=String(v); });
-  }catch(e){}
-  return names;
+// ═══════════════════════════════════════════════════════════════
+//  NOMI EA — logica semplice: salva solo le personalizzazioni,
+//  usa EA_DEFAULTS come fallback, nessun merging complicato
+// ═══════════════════════════════════════════════════════════════
+let userNames = {};   // solo le modifiche dell'utente, chiavi STRINGA
+try {
+  const raw = localStorage.getItem("eaNames");
+  if(raw) userNames = JSON.parse(raw);
+} catch(e) { userNames = {}; }
+
+function getEAName(magic, autoName){
+  const k = String(magic);
+  return userNames[k] || EA_DEFAULTS[magic] || autoName || ("EA #" + magic);
 }
-let eaNames=loadEANames();
 let rawData=[];
 let refreshTimer=null;
 // ── Helpers isEnabled (3 livelli) ────────────────────────────────────────────
@@ -512,7 +514,6 @@ function eaRanking(){
     return{magic:e.magic,name:e.name||getEAName(e.magic,''),trades:tr.length,wr:w/tr.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl:parseFloat(pl.toFixed(2)),maxDD:parseFloat(maxDD(tr).toFixed(2)),tradeList:tr};
   });
 }
-function getEAName(m,a){return eaNames[String(m)]||a||("EA #"+m);}
 function fmtPL(n){const a=Math.abs(n);return(n>=0?"+":"-")+(a>=1000?(a/1000).toFixed(2)+"K":a.toFixed(2));}
 function fmtN(n){return n>=1000?(n/1000).toFixed(1)+"K":n.toFixed(2);}
 function wrColor(w){return w>=65?"var(--green)":w>=50?"var(--accent)":"var(--red)";}
@@ -675,36 +676,90 @@ function renderEATable(eas,trades,vn,an,currency){
 function sparkSVG(trades,w=80,h=28){if(!trades||trades.length<2)return`<svg width="${w}" height="${h}"></svg>`;const s=[...trades].sort((a,b)=>a.t-b.t).slice(-30);let cum=0;const pts=s.map(t=>{cum+=t.p;return cum;});const mn=Math.min(...pts),mx=Math.max(...pts),range=mx-mn||1;const xs=pts.map((_,i)=>i*(w-2)/(pts.length-1)+1);const ys=pts.map(p=>h-2-((p-mn)/range)*(h-4));const d=xs.map((x,i)=>(i===0?'M':'L')+x.toFixed(1)+','+ys[i].toFixed(1)).join(' ');const col=pts[pts.length-1]>=0?'#00d97e':'#ff3d5e';return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path d="${d}" stroke="${col}" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>`;}
 function openSettings(){buildSettings("");document.getElementById("settingsOverlay").classList.add("open");}
 function closeSettings(){document.getElementById("settingsOverlay").classList.remove("open");}
+
 function buildSettings(filter){
-  const f=filter.toLowerCase(),groups={};
-  rawData.forEach(vps=>{(vps.accounts||[]).forEach(acc=>{const key=`${vps.vps_name} — #${acc.account_number} (${acc.broker||''}) [${acc.mode.toUpperCase()}]`;if(!groups[key])groups[key]=[];(acc.eas||[]).forEach(ea=>{if(!groups[key].find(e=>e.magic===ea.magic))groups[key].push({magic:ea.magic,autoName:ea.name||("EA #"+ea.magic)});});});});
+  const f=filter.toLowerCase(), groups={};
+  rawData.forEach(vps=>{
+    (vps.accounts||[]).forEach(acc=>{
+      const key=`${vps.vps_name} — #${acc.account_number} (${acc.broker||''}) [${acc.mode.toUpperCase()}]`;
+      if(!groups[key]) groups[key]=[];
+      (acc.eas||[]).forEach(ea=>{
+        if(!groups[key].find(e=>e.magic===ea.magic))
+          groups[key].push({magic:ea.magic, autoName:ea.name||("EA #"+ea.magic)});
+      });
+    });
+  });
+  // Aggiungi magic dei default non ancora ricevuti
   const known=new Set(Object.values(groups).flat().map(e=>e.magic));
   const extra="Magic configurati (non ancora ricevuti)";
-  Object.entries(EA_DEFAULTS).forEach(([m,n])=>{if(!known.has(parseInt(m))){if(!groups[extra])groups[extra]=[];groups[extra].push({magic:parseInt(m),autoName:n});}});
+  Object.entries(EA_DEFAULTS).forEach(([m,n])=>{
+    if(!known.has(parseInt(m))){
+      if(!groups[extra]) groups[extra]=[];
+      groups[extra].push({magic:parseInt(m), autoName:n});
+    }
+  });
   let html="";
-  Object.entries(groups).forEach(([gName,eas])=>{const rows=eas.filter(ea=>{if(!f)return true;return String(ea.magic).includes(f)||(eaNames[String(ea.magic)]||ea.autoName).toLowerCase().includes(f);});if(!rows.length)return;html+=`<div class="sp-group"><div class="sp-group-title">${gName}</div>`;rows.forEach(ea=>{const cur=eaNames[String(ea.magic)]||EA_DEFAULTS[ea.magic]||ea.autoName;const isDef=cur===(EA_DEFAULTS[ea.magic]||ea.autoName);html+=`<div class="sp-row"><span class="sp-magic">${ea.magic}</span><input class="sp-input ${isDef?'':'modified'}" type="text" data-magic="${ea.magic}" data-default="${(EA_DEFAULTS[ea.magic]||ea.autoName).replace(/"/g,'&quot;')}" value="${cur.replace(/"/g,'&quot;')}" placeholder="${ea.autoName}" oninput="markMod(this)"/><button class="sp-clear" onclick="clearOne(${ea.magic})" title="Ripristina">↩</button></div>`;});html+="</div>";});
-  document.getElementById("spContent").innerHTML=html||`<div style="color:var(--text3);padding:20px 0;font-size:12px">Nessun EA trovato.</div>`;
+  Object.entries(groups).forEach(([gName,eas])=>{
+    const rows=eas.filter(ea=>{
+      if(!f) return true;
+      const name=getEAName(ea.magic, ea.autoName);
+      return String(ea.magic).includes(f)||name.toLowerCase().includes(f);
+    });
+    if(!rows.length) return;
+    html+=`<div class="sp-group"><div class="sp-group-title">${gName}</div>`;
+    rows.forEach(ea=>{
+      const k=String(ea.magic);
+      const cur=userNames[k]||EA_DEFAULTS[ea.magic]||ea.autoName;
+      const def=EA_DEFAULTS[ea.magic]||ea.autoName;
+      const modified=(cur!==def);
+      html+=`<div class="sp-row">
+        <span class="sp-magic">${ea.magic}</span>
+        <input class="sp-input${modified?' modified':''}" type="text"
+          data-magic="${k}"
+          data-default="${def.replace(/"/g,'&quot;')}"
+          value="${cur.replace(/"/g,'&quot;')}"
+          placeholder="${def}"
+          oninput="markMod(this)"/>
+        <button class="sp-clear" onclick="clearOne('${k}')" title="Ripristina">↩</button>
+      </div>`;
+    });
+    html+="</div>";
+  });
+  document.getElementById("spContent").innerHTML=html||
+    `<div style="color:var(--text3);padding:20px 0;font-size:12px">Nessun EA trovato.</div>`;
 }
-function markMod(inp){inp.classList.toggle("modified",inp.value!==inp.dataset.default&&inp.value!=="");}
-function clearOne(magic){const inp=document.querySelector(`.sp-input[data-magic="${magic}"]`);if(inp){inp.value=inp.dataset.default;inp.classList.remove("modified");}}
+
+function markMod(inp){
+  inp.classList.toggle("modified", inp.value!==inp.dataset.default);
+}
+
+function clearOne(k){
+  const inp=document.querySelector(`.sp-input[data-magic="${k}"]`);
+  if(inp){ inp.value=inp.dataset.default; inp.classList.remove("modified"); }
+}
+
 function saveAllNames(){
-  // Legge tutti gli input e costruisce l'oggetto da salvare
-  const toSave={};
   document.querySelectorAll(".sp-input[data-magic]").forEach(inp=>{
     const k=String(inp.dataset.magic);
     const v=inp.value.trim();
-    if(v) toSave[k]=v;
+    const def=inp.dataset.default||'';
+    if(v && v!==def) userNames[k]=v;         // salva solo se modificato
+    else if(v===def)  delete userNames[k];    // rimuovi se tornato al default
+    else if(!v)       delete userNames[k];    // rimuovi se vuoto
   });
-  // Salva su localStorage senza filtri
-  localStorage.setItem("eaNames", JSON.stringify(toSave));
-  // Ricarica in memoria da localStorage (unica fonte di verità)
-  eaNames=loadEANames();
-  // Conferma visiva
+  localStorage.setItem("eaNames", JSON.stringify(userNames));
+  // Feedback
   const fb=document.getElementById("saveOk");
-  fb.style.opacity="1"; setTimeout(()=>fb.style.opacity="0",2000);
+  fb.style.opacity="1"; setTimeout(()=>fb.style.opacity="0",2500);
   renderAll();
 }
-function resetAllNames(){if(!confirm("Ripristinare tutti i nomi?"))return;localStorage.removeItem("eaNames");eaNames=loadEANames();buildSettings("");renderAll();}
+
+function resetAllNames(){
+  if(!confirm("Ripristinare tutti i nomi ai valori di default?")) return;
+  userNames={};
+  localStorage.removeItem("eaNames");
+  buildSettings(""); renderAll();
+}
 function toggleVPS(name,el){expandedVps[name]=!expandedVps[name];document.getElementById("vc-"+name).classList.toggle("open",expandedVps[name]);el.querySelector(".toggle-icon").classList.toggle("open",expandedVps[name]);el.classList.toggle("open",expandedVps[name]);}
 function toggleMT(id,el){expandedMt[id]=!expandedMt[id];document.getElementById("ea-"+id).classList.toggle("open",expandedMt[id]);el.querySelector(".toggle-icon").classList.toggle("open",expandedMt[id]);el.classList.toggle("open",expandedMt[id]);}
 function toggleEA(vps,acc,magic,btn){
