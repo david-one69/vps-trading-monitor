@@ -172,6 +172,8 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .btn-save-all{background:var(--accent);color:#000;border:none;border-radius:7px;padding:8px 22px;font-weight:700;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;}
 .btn-save-all:hover{background:var(--accent2);}
 .btn-reset-all{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline;}
+.btn-io{background:var(--bg4);border:1px solid var(--border2);color:var(--text2);font-size:11px;border-radius:5px;padding:4px 10px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
+.btn-io:hover{color:var(--accent);border-color:rgba(240,165,0,.35);}
 .save-ok{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;font-family:'JetBrains Mono',monospace;}
 footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-top:1px solid var(--border);margin-top:20px;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;}
 @media(max-width:1300px){.kpi-strip{grid-template-columns:repeat(3,1fr);}.chart-grid-2{grid-template-columns:1fr 1fr;}}
@@ -322,7 +324,11 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
       <div id="spContent"></div>
     </div>
     <div class="sp-foot">
-      <button class="btn-reset-all" onclick="resetAllNames()">Ripristina default</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-reset-all" onclick="resetAllNames()">Ripristina default</button>
+        <button class="btn-io" onclick="exportNames()" title="Scarica i nomi come file JSON da importare su altri dispositivi">⬇ Esporta</button>
+        <label class="btn-io" title="Importa nomi da un file JSON esportato in precedenza">⬆ Importa<input type="file" accept=".json" onchange="importNames(event)" style="display:none"></label>
+      </div>
       <span class="save-ok" id="saveOk">✓ Salvato!</span>
       <button class="btn-save-all" onclick="saveAllNames()">💾 Salva tutto</button>
     </div>
@@ -485,6 +491,67 @@ function calcVPSStats(vps){
   return{wr:w/trades.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl,trades:trades.length};
 }
 function maxDD(trades){if(!trades.length)return 0;let peak=0,dd=0,cum=0;[...trades].sort((a,b)=>a.t-b.t).forEach(t=>{cum+=t.p;if(cum>peak)peak=cum;const d=peak-cum;if(d>dd)dd=d;});return dd;}
+
+// DD% = maxDD / (balance_iniziale + peak_cumPL) * 100
+// balance_iniziale = balance_attuale - totalPL_storico
+// Per gli EA cross-account raccogliamo i balance degli account che li ospitano
+function maxDDpct(trades, baseBalance){
+  if(!trades.length||!baseBalance) return 0;
+  const sorted=[...trades].sort((a,b)=>a.t-b.t);
+  let peak=0,dd=0,cum=0;
+  sorted.forEach(t=>{
+    cum+=t.p;
+    if(cum>peak) peak=cum;
+    const d=peak-cum;
+    if(d>dd) dd=d;
+  });
+  const peakEquity = baseBalance + peak;
+  return peakEquity>0 ? (dd/peakEquity*100) : 0;
+}
+
+// Export nomi EA come file JSON
+function exportNames(){
+  const data={
+    version:1,
+    exported: new Date().toISOString(),
+    names: userNames
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ea-names-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Import nomi EA da file JSON
+function importNames(event){
+  const file=event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      // Supporta sia {names:{...}} che direttamente {"magic":"name"}
+      const imported = data.names || data;
+      if(typeof imported!=='object'||Array.isArray(imported)) throw new Error('Formato non valido');
+      let count=0;
+      Object.entries(imported).forEach(([k,v])=>{
+        if(v&&String(v).trim()){ userNames[String(k)]=String(v).trim(); count++; }
+      });
+      localStorage.setItem("eaNames", JSON.stringify(userNames));
+      const fb=document.getElementById("saveOk");
+      fb.textContent=`✓ ${count} nomi importati!`;
+      fb.style.opacity="1";
+      setTimeout(()=>{fb.style.opacity="0"; fb.textContent='✓ Salvato!';},3000);
+      buildSettings(""); renderAll();
+    }catch(err){
+      alert("Errore importazione: "+err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value=''; // reset input per poter reimportare lo stesso file
+}
 function streak(trades){if(!trades.length)return{type:'—',count:0};const s=[...trades].sort((a,b)=>b.t-a.t);const f=s[0].w;let c=0;for(const t of s){if(t.w!==f)break;c++;}return{type:f?'W':'L',count:c};}
 function equityCurve(trades){const s=[...trades].sort((a,b)=>a.t-b.t);let cum=0;const pts=s.map(t=>{cum+=t.p;return{x:t.t*1000,y:parseFloat(cum.toFixed(2))};});if(pts.length>400){const step=Math.ceil(pts.length/400);return pts.filter((_,i)=>i%step===0||i===pts.length-1);}return pts;}
 function dailyPL(trades){const bd={};trades.forEach(t=>{const d=new Date(t.t*1000);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;bd[k]=(bd[k]||0)+t.p;});return Object.entries(bd).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>({label:k,val:parseFloat(v.toFixed(2))}));}
@@ -496,22 +563,40 @@ function eaRanking(){
     if(!isVPSEnabled(vps.vps_name)) return;
     filterAccounts(vps).forEach(acc=>{
       if(!isMTEnabled(vps.vps_name,acc.account_number)) return;
+      const accBal = acc.balance||0;
+      const accTotalPL = (acc.trades||[]).reduce((s,t)=>s+t.p,0);
+      const startBal = accBal - accTotalPL; // balance prima di questi trade
       (acc.trades||[]).forEach(t=>{
         if(!isEAEnabled(vps.vps_name,acc.account_number,t.m)) return;
         if(!inRange(t.t)) return;
-        if(!bm[t.m]) bm[t.m]={magic:t.m,name:'',trades:[]};
+        if(!bm[t.m]) bm[t.m]={magic:t.m,name:'',trades:[],balances:[]};
         bm[t.m].trades.push(t);
       });
       (acc.eas||[]).forEach(ea=>{
-        if(!bm[ea.magic]) bm[ea.magic]={magic:ea.magic,name:'',trades:[]};
+        if(!bm[ea.magic]) bm[ea.magic]={magic:ea.magic,name:'',trades:[],balances:[]};
         bm[ea.magic].name=getEAName(ea.magic,ea.name);
+        // Associa il balance iniziale dell'account a questo magic
+        if(startBal>0) bm[ea.magic].balances.push(startBal);
       });
     });
   });
   return Object.values(bm).filter(e=>e.trades.length>0).map(e=>{
-    const{trades:tr}=e;let w=0,pl=0,gp=0,gl=0;
+    const{trades:tr}=e;
+    let w=0,pl=0,gp=0,gl=0;
     tr.forEach(t=>{pl+=t.p;if(t.w){w++;gp+=t.p;}else gl+=Math.abs(t.p);});
-    return{magic:e.magic,name:e.name||getEAName(e.magic,''),trades:tr.length,wr:w/tr.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl:parseFloat(pl.toFixed(2)),maxDD:parseFloat(maxDD(tr).toFixed(2)),tradeList:tr};
+    const dd=maxDD(tr);
+    // Base per DD%: media dei balance iniziali degli account che ospitano questo EA
+    const avgBal = e.balances.length ? e.balances.reduce((a,b)=>a+b,0)/e.balances.length : 0;
+    const ddPct = maxDDpct(tr, avgBal);
+    return{
+      magic:e.magic, name:e.name||getEAName(e.magic,''),
+      trades:tr.length, wr:w/tr.length*100,
+      pf:gl>0?gp/gl:(gp>0?99:0),
+      pl:parseFloat(pl.toFixed(2)),
+      maxDD:parseFloat(dd.toFixed(2)),
+      maxDDpct:parseFloat(ddPct.toFixed(2)),
+      tradeList:tr
+    };
   });
 }
 function fmtPL(n){const a=Math.abs(n);return(n>=0?"+":"-")+(a>=1000?(a/1000).toFixed(2)+"K":a.toFixed(2));}
@@ -620,9 +705,12 @@ function renderCharts(){
 function renderRanking(){
   const sk=document.getElementById('rankSort').value;
   const rnk=eaRanking().sort((a,b)=>{
-    if(sk==='pl')return b.pl-a.pl;if(sk==='wr')return b.wr-a.wr;
-    if(sk==='pf')return b.pf-a.pf;if(sk==='trades')return b.trades-a.trades;
-    if(sk==='dd')return b.maxDD-a.maxDD;return 0;
+    if(sk==='pl')     return b.pl-a.pl;
+    if(sk==='wr')     return b.wr-a.wr;
+    if(sk==='pf')     return b.pf-a.pf;
+    if(sk==='trades') return b.trades-a.trades;
+    if(sk==='dd')     return b.maxDDpct-a.maxDDpct;
+    return 0;
   });
   if(!rnk.length){document.getElementById('eaRanking').innerHTML='<div class="state-box"><span>Nessun dato disponibile.</span></div>';return;}
   const rows=rnk.map((e,i)=>`<tr>
@@ -632,10 +720,18 @@ function renderRanking(){
     <td><div class="rank-wr-wrap"><div class="rank-wr-bar"><div class="rank-wr-fill" style="width:${e.wr}%;background:${wrColor(e.wr)}"></div></div><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${wrColor(e.wr)};width:38px;text-align:right">${e.wr.toFixed(1)}%</span></div></td>
     <td class="td-r"><span class="pf-pill ${pfCls(e.pf)}">${e.pf>=99?'∞':e.pf.toFixed(2)}</span></td>
     <td class="td-r"><span class="pl-val ${plCls(e.pl)}">${fmtPL(e.pl)}</span></td>
-    <td class="td-r"><span class="dd-val">${e.maxDD>0?fmtN(e.maxDD):'—'}</span></td>
+    <td class="td-r">
+      <span class="dd-val">${e.maxDD>0?fmtN(e.maxDD):'—'}</span>
+      ${e.maxDDpct>0?`<div style="font-size:9px;color:${e.maxDDpct>20?'var(--red)':e.maxDDpct>10?'var(--accent)':'var(--text3)'};">${e.maxDDpct.toFixed(1)}%</div>`:''}
+    </td>
     <td style="padding:10px 8px">${sparkSVG(e.tradeList)}</td>
   </tr>`).join('');
-  document.getElementById('eaRanking').innerHTML=`<table class="ranking-table"><thead><tr><th style="width:34px">#</th><th>EA / Magic</th><th class="r">Trade</th><th>Win Rate</th><th class="r">P.Factor</th><th class="r">P&L</th><th class="r">Max DD</th><th>Trend (30T)</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('eaRanking').innerHTML=`<table class="ranking-table"><thead><tr>
+    <th style="width:34px">#</th><th>EA / Magic</th>
+    <th class="r">Trade</th><th>Win Rate</th>
+    <th class="r">P.Factor</th><th class="r">P&L</th>
+    <th class="r">Max DD (€ / %)</th><th>Trend (30T)</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function renderVPSList(){
