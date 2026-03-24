@@ -517,21 +517,11 @@ function calcVPSStats(vps){
 }
 function maxDD(trades){if(!trades.length)return 0;let peak=0,dd=0,cum=0;[...trades].sort((a,b)=>a.t-b.t).forEach(t=>{cum+=t.p;if(cum>peak)peak=cum;const d=peak-cum;if(d>dd)dd=d;});return dd;}
 
-// DD% = maxDD / (balance_iniziale + peak_cumPL) * 100
-// balance_iniziale = balance_attuale - totalPL_storico
-// Per gli EA cross-account raccogliamo i balance degli account che li ospitano
-function maxDDpct(trades, baseBalance){
-  if(!trades.length||!baseBalance) return 0;
-  const sorted=[...trades].sort((a,b)=>a.t-b.t);
-  let peak=0,dd=0,cum=0;
-  sorted.forEach(t=>{
-    cum+=t.p;
-    if(cum>peak) peak=cum;
-    const d=peak-cum;
-    if(d>dd) dd=d;
-  });
-  const peakEquity = baseBalance + peak;
-  return peakEquity>0 ? (dd/peakEquity*100) : 0;
+// DD% = maxDD / balance * 100
+function maxDDpct(trades, balance){
+  if(!trades.length || !balance) return 0;
+  const dd = maxDD(trades);
+  return dd > 0 ? (dd / balance * 100) : 0;
 }
 
 // Export nomi EA come file JSON
@@ -591,8 +581,6 @@ function eaRanking(){
     filterAccounts(vps).forEach(acc=>{
       if(!isMTEnabled(vps.vps_name,acc.account_number)) return;
       const accBal = acc.balance||0;
-      const accTotalPL = (acc.trades||[]).reduce((s,t)=>s+t.p,0);
-      const startBal = accBal - accTotalPL; // balance prima di questi trade
       (acc.trades||[]).forEach(t=>{
         if(!isEAEnabled(vps.vps_name,acc.account_number,t.m)) return;
         if(!inRange(t.t)) return;
@@ -602,8 +590,8 @@ function eaRanking(){
       (acc.eas||[]).forEach(ea=>{
         if(!bm[ea.magic]) bm[ea.magic]={magic:ea.magic,name:'',trades:[],balances:[]};
         bm[ea.magic].name=getEAName(ea.magic,ea.name);
-        // Associa il balance iniziale dell'account a questo magic
-        if(startBal>0) bm[ea.magic].balances.push(startBal);
+        // Usa il balance attuale come base per il calcolo DD%
+        if(accBal>0) bm[ea.magic].balances.push(accBal);
       });
     });
   });
