@@ -689,9 +689,47 @@ function renderCharts(){
   dc('eaBar');
   const rnk=eaRanking().sort((a,b)=>b.pl-a.pl);
   const top=rnk.slice(0,12);
-  document.getElementById('eaBarWrap').style.height=Math.max(200,top.length*32)+'px';
+  document.getElementById('eaBarWrap').style.height=Math.max(200,top.length*42)+'px';
   if(top.length){
-    CI['eaBar']=new Chart(document.getElementById('eaBarChart').getContext('2d'),{type:'bar',data:{labels:top.map(e=>e.name.length>20?e.name.slice(0,18)+'…':e.name),datasets:[{label:'P&L',data:top.map(e=>e.pl),backgroundColor:top.map(e=>cc(e.pl)),borderColor:top.map(e=>cb(e.pl)),borderWidth:1,borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{grid:{color:'rgba(29,33,64,0.5)'},ticks:{callback:v=>fmtPL(v)}},y:{grid:{display:false}}},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:i=>' P&L: '+fmtPL(i.parsed.x)}}}}});
+    // Spezza il nome in righe da max 16 caratteri per renderlo leggibile
+    function wrapLabel(name){
+      if(name.length<=16) return name;
+      const words=name.split(/[\s_\-]+/);
+      const lines=[]; let line='';
+      words.forEach(w=>{
+        if((line+(line?'-':'')+w).length>16){if(line)lines.push(line);line=w;}
+        else{line=(line?(line+' '):'')+w;}
+      });
+      if(line) lines.push(line);
+      return lines.length>1?lines:name.slice(0,16)+'…';
+    }
+    CI['eaBar']=new Chart(document.getElementById('eaBarChart').getContext('2d'),{
+      type:'bar',
+      data:{
+        labels:top.map(e=>wrapLabel(e.name)),
+        datasets:[{
+          label:'P&L',data:top.map(e=>e.pl),
+          backgroundColor:top.map(e=>cc(e.pl)),
+          borderColor:top.map(e=>cb(e.pl)),
+          borderWidth:1,borderRadius:4,borderSkipped:false
+        }]
+      },
+      options:{
+        indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        layout:{padding:{left:0}},
+        scales:{
+          x:{grid:{color:'rgba(29,33,64,0.5)'},ticks:{callback:v=>fmtPL(v)}},
+          y:{grid:{display:false},ticks:{font:{size:11},color:'rgba(212,217,240,0.85)'},afterFit(scale){scale.width=160;}}
+        },
+        plugins:{
+          legend:{display:false},
+          tooltip:{...TT,callbacks:{
+            title:items=>top[items[0].dataIndex].name,
+            label:i=>' P&L: '+fmtPL(i.parsed.x)
+          }}
+        }
+      }
+    });
   }
   // Donut
   dc('wl');
