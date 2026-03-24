@@ -15,13 +15,39 @@ app = Flask(__name__)
 CORS(app)  # Permette alla dashboard di chiamare l'API da qualsiasi dominio
 
 # ─── Configurazione ───────────────────────────────────────
-API_KEY = os.environ.get("API_KEY", "trading2024abc")
+API_KEY = os.environ.get("API_KEY", "tradingvps")
 # ──────────────────────────────────────────────────────────
 
 # Storage in memoria (i dati vengono ricaricati ad ogni riavvio del server)
 # Per Render.com free tier questo va benissimo — le VPS reinviano ogni minuto
 data_store = {}
 data_lock  = threading.Lock()
+
+# ── Nomi EA personalizzati ────────────────────────────────
+# Salvati su file JSON per persistere tra riavvii di Render.
+# Nota: Render.com free tier usa filesystem effimero — in caso di deploy
+# i dati si perdono, ma le VPS reinviano i trade e la dashboard
+# può reimportare i nomi. Per persistenza totale usare un DB esterno.
+EA_NAMES_FILE = "ea_names.json"
+ea_names_lock = threading.Lock()
+
+def load_ea_names_from_disk():
+    try:
+        if os.path.exists(EA_NAMES_FILE):
+            with open(EA_NAMES_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+def save_ea_names_to_disk(names):
+    try:
+        with open(EA_NAMES_FILE, "w", encoding="utf-8") as f:
+            json.dump(names, f, ensure_ascii=False)
+    except Exception as e:
+        print(f"Errore salvataggio nomi EA: {e}")
+
+ea_names_store = load_ea_names_from_disk()
 
 
 def now_iso():
@@ -31,7 +57,6 @@ def now_iso():
 # ── Endpoint: le VPS inviano i dati qui ──────────────────
 @app.route("/api/update", methods=["POST"])
 def update():
-    # Verifica API key
     if request.headers.get("X-API-Key") != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
 
@@ -61,16 +86,11 @@ def update():
 @app.route("/api/data", methods=["GET"])
 def get_data():
     with data_lock:
-        # Ricostruisce struttura per VPS
         result = []
         for vps_name, accounts in data_store.items():
-            accs_list = []
-            for acc_key, acc_data in accounts.items():
-                accs_list.append(acc_data)
-
             result.append({
                 "vps_name": vps_name,
-                "accounts": accs_list,
+                "accounts": list(accounts.values()),
             })
 
         return jsonify({
@@ -81,7 +101,41 @@ def get_data():
         })
 
 
-# ── Health check (Render lo usa per tenere sveglio il server) ──
+# ── Endpoint: GET nomi EA ─────────────────────────────────
+@app.route("/api/names", methods=["GET"])
+def get_names():
+    with ea_names_lock:
+        return jsonify({
+            "status": "ok",
+            "names":  ea_names_store,
+            "updated_at": now_iso(),
+        })
+
+
+# ── Endpoint: POST nomi EA (salva) ───────────────────────
+@app.route("/api/names", methods=["POST"])
+def set_names():
+    if request.headers.get("X-API-Key") != API_KEY:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    payload = request.get_json(force=True, silent=True)
+    if not payload or "names" not in payload:
+        return jsonify({"error": "Invalid JSON — atteso campo 'names'"}), 400
+
+    names = payload["names"]
+    if not isinstance(names, dict):
+        return jsonify({"error": "Il campo 'names' deve essere un oggetto"}), 400
+
+    with ea_names_lock:
+        ea_names_store.clear()
+        ea_names_store.update({str(k): str(v) for k, v in names.items() if v})
+        save_ea_names_to_disk(ea_names_store)
+
+    print(f"[{now_iso()}] Nomi EA aggiornati: {len(ea_names_store)} voci")
+    return jsonify({"status": "ok", "saved": len(ea_names_store)}), 200
+
+
+# ── Health check ──────────────────────────────────────────
 @app.route("/", methods=["GET"])
 @app.route("/health", methods=["GET"])
 def health():

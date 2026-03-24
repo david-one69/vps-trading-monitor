@@ -358,11 +358,11 @@ function saveDisabled(){
   localStorage.setItem("disabledVPS", JSON.stringify(disabledVPS));
 }
 // ── EA Names ─────────────────────────────────────────────────────────────────
-// ═══════════════════════════════════════════════════════════════
-//  NOMI EA — logica semplice: salva solo le personalizzazioni,
-//  usa EA_DEFAULTS come fallback, nessun merging complicato
-// ═══════════════════════════════════════════════════════════════
-let userNames = {};   // solo le modifiche dell'utente, chiavi STRINGA
+// ── Nomi EA — sincronizzati col server ───────────────────
+// userNames: personalizzazioni utente, chiavi STRINGA
+// Al caricamento: prima il localStorage (immediato), poi il server (autoritativo)
+// Al salvataggio: localStorage + server in parallelo
+let userNames = {};
 try {
   const raw = localStorage.getItem("eaNames");
   if(raw) userNames = JSON.parse(raw);
@@ -371,6 +371,31 @@ try {
 function getEAName(magic, autoName){
   const k = String(magic);
   return userNames[k] || EA_DEFAULTS[magic] || autoName || ("EA #" + magic);
+}
+
+// Carica nomi dal server (sovrascrive localStorage con la versione cloud)
+async function syncNamesFromServer(){
+  try{
+    const r = await fetch(SERVER_URL + "/api/names", {cache:"no-store"});
+    if(!r.ok) return;
+    const j = await r.json();
+    if(j.names && typeof j.names === "object"){
+      // Merge: il server è autoritativo, ma mantieni eventuali chiavi locali non ancora inviate
+      Object.entries(j.names).forEach(([k,v])=>{ if(v) userNames[String(k)]=String(v); });
+      localStorage.setItem("eaNames", JSON.stringify(userNames));
+    }
+  }catch(e){ /* server offline o sleep — usa localStorage */ }
+}
+
+// Salva nomi sul server (non blocca l'UI)
+async function syncNamesToServer(){
+  try{
+    await fetch(SERVER_URL + "/api/names", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","X-API-Key":"tradingvps"},
+      body: JSON.stringify({names: userNames})
+    });
+  }catch(e){ /* silenzioso — già salvato in localStorage */ }
 }
 let rawData=[];
 let refreshTimer=null;
@@ -540,6 +565,8 @@ function importNames(event){
         if(v&&String(v).trim()){ userNames[String(k)]=String(v).trim(); count++; }
       });
       localStorage.setItem("eaNames", JSON.stringify(userNames));
+      // Sincronizza anche sul server
+      syncNamesToServer();
       const fb=document.getElementById("saveOk");
       fb.textContent=`✓ ${count} nomi importati!`;
       fb.style.opacity="1";
@@ -608,6 +635,8 @@ function plCls(n){return n>=0?"pos":"neg";}
 function filterAccounts(vps){if(currentMode==="both")return vps.accounts||[];return(vps.accounts||[]).filter(a=>a.mode===currentMode);}
 
 async function fetchData(){
+  // Al primo caricamento sincronizza i nomi dal server
+  if(!rawData.length) await syncNamesFromServer();
   try{
     const r=await fetch(SERVER_URL+"/api/data",{cache:"no-store"});
     if(!r.ok)throw new Error("HTTP "+r.status);
@@ -839,13 +868,16 @@ function saveAllNames(){
     const k=String(inp.dataset.magic);
     const v=inp.value.trim();
     const def=inp.dataset.default||'';
-    if(v && v!==def) userNames[k]=v;         // salva solo se modificato
-    else if(v===def)  delete userNames[k];    // rimuovi se tornato al default
-    else if(!v)       delete userNames[k];    // rimuovi se vuoto
+    if(v && v!==def) userNames[k]=v;
+    else if(v===def)  delete userNames[k];
+    else if(!v)       delete userNames[k];
   });
+  // Salva locale
   localStorage.setItem("eaNames", JSON.stringify(userNames));
-  // Feedback
+  // Salva sul server in background (sincronizza tutti i dispositivi)
+  syncNamesToServer();
   const fb=document.getElementById("saveOk");
+  fb.textContent='✓ Salvato!';
   fb.style.opacity="1"; setTimeout(()=>fb.style.opacity="0",2500);
   renderAll();
 }
