@@ -353,11 +353,15 @@ function saveDisabled(){
 }
 // ── EA Names ─────────────────────────────────────────────────────────────────
 function loadEANames(){
-  const saved=JSON.parse(localStorage.getItem("eaNames")||"{}");
-  const merged={};
-  Object.entries(EA_DEFAULTS).forEach(([k,v])=>merged[String(k)]=v);
-  Object.entries(saved).forEach(([k,v])=>{if(v&&v.trim())merged[String(k)]=v.trim();});
-  return merged;
+  // Carica i default con chiavi stringa
+  const names={};
+  Object.entries(EA_DEFAULTS).forEach(([k,v])=>{ names[String(k)]=v; });
+  // Sovrascrive con quanto salvato dall'utente
+  try{
+    const saved=JSON.parse(localStorage.getItem("eaNames")||"{}");
+    Object.entries(saved).forEach(([k,v])=>{ if(v) names[String(k)]=String(v); });
+  }catch(e){}
+  return names;
 }
 let eaNames=loadEANames();
 let rawData=[];
@@ -684,17 +688,18 @@ function buildSettings(filter){
 function markMod(inp){inp.classList.toggle("modified",inp.value!==inp.dataset.default&&inp.value!=="");}
 function clearOne(magic){const inp=document.querySelector(`.sp-input[data-magic="${magic}"]`);if(inp){inp.value=inp.dataset.default;inp.classList.remove("modified");}}
 function saveAllNames(){
-  document.querySelectorAll(".sp-input[data-magic]").forEach(inp=>{
-    const m=String(inp.dataset.magic), v=inp.value.trim();
-    if(v) eaNames[m]=v; else delete eaNames[m];
-  });
-  // Salva solo i nomi che differiscono dai default (confronto con chiave intera e stringa)
+  // Legge tutti gli input e costruisce l'oggetto da salvare
   const toSave={};
-  Object.entries(eaNames).forEach(([m,n])=>{
-    const def=EA_DEFAULTS[parseInt(m)]||EA_DEFAULTS[m];
-    if(n && n!==def) toSave[m]=n;
+  document.querySelectorAll(".sp-input[data-magic]").forEach(inp=>{
+    const k=String(inp.dataset.magic);
+    const v=inp.value.trim();
+    if(v) toSave[k]=v;
   });
+  // Salva su localStorage senza filtri
   localStorage.setItem("eaNames", JSON.stringify(toSave));
+  // Ricarica in memoria da localStorage (unica fonte di verità)
+  eaNames=loadEANames();
+  // Conferma visiva
   const fb=document.getElementById("saveOk");
   fb.style.opacity="1"; setTimeout(()=>fb.style.opacity="0",2000);
   renderAll();
