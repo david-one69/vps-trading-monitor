@@ -131,6 +131,14 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .ea-toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--text3);transition:transform .2s,background .2s;}
 .ea-toggle.on{background:rgba(0,217,126,.3);border:1px solid rgba(0,217,126,.5);}
 .ea-toggle.on::after{transform:translateX(12px);background:var(--green);}
+.row-toggle{width:28px;height:16px;border-radius:8px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;background:var(--border2);justify-self:end;}
+.row-toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--text3);transition:transform .2s,background .2s;}
+.row-toggle.on{background:rgba(0,217,126,.3);border:1px solid rgba(0,217,126,.5);}
+.row-toggle.on::after{transform:translateX(12px);background:var(--green);}
+.vps-block.row-off>.vps-header{opacity:.45;}
+.vps-block.row-off>.vps-content{opacity:.35;pointer-events:none;}
+.mt-block.row-off>.mt-header{opacity:.45;}
+.mt-block.row-off>.ea-container{opacity:.35;pointer-events:none;}
 .wr-wrap{display:flex;align-items:center;gap:6px;min-width:90px;}
 .wr-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
 .wr-fill{height:100%;border-radius:2px;transition:width .4s;}
@@ -293,22 +301,63 @@ function cc(v){return v>=0?'rgba(0,217,126,0.75)':'rgba(255,61,94,0.75)';}
 function cb(v){return v>=0?'#00d97e':'#ff3d5e';}
 const TT={backgroundColor:'rgba(8,10,22,0.97)',borderColor:'rgba(29,33,64,0.8)',borderWidth:1,titleColor:'#d4d9f0',bodyColor:'rgba(102,110,156,0.9)',padding:10,displayColors:true,titleFont:{family:"'JetBrains Mono',monospace",size:10},bodyFont:{family:"'JetBrains Mono',monospace",size:10}};
 let currentHours="1d",currentMode="live",expandedVps={},expandedMt={},allExpanded=false;
-let disabledEAs=JSON.parse(localStorage.getItem("disabledEAs")||"{}");
-let eaNames=Object.assign({},EA_DEFAULTS,JSON.parse(localStorage.getItem("eaNames")||"{}"));
+// ── Storage a 3 livelli ──────────────────────────────────────────────────────
+let disabledEAs  = JSON.parse(localStorage.getItem("disabledEAs") ||"{}");
+let disabledMT   = JSON.parse(localStorage.getItem("disabledMT")  ||"{}"); // key: "VPS_accNum"
+let disabledVPS  = JSON.parse(localStorage.getItem("disabledVPS") ||"{}"); // key: "VPS_name"
+function saveDisabled(){
+  localStorage.setItem("disabledEAs", JSON.stringify(disabledEAs));
+  localStorage.setItem("disabledMT",  JSON.stringify(disabledMT));
+  localStorage.setItem("disabledVPS", JSON.stringify(disabledVPS));
+}
+// ── EA Names ─────────────────────────────────────────────────────────────────
+function loadEANames(){
+  const saved=JSON.parse(localStorage.getItem("eaNames")||"{}");
+  const merged={};
+  Object.entries(EA_DEFAULTS).forEach(([k,v])=>merged[String(k)]=v);
+  Object.entries(saved).forEach(([k,v])=>{if(v&&v.trim())merged[String(k)]=v.trim();});
+  return merged;
+}
+let eaNames=loadEANames();
 let rawData=[];
 let refreshTimer=null;
-
+// ── Helpers isEnabled (3 livelli) ────────────────────────────────────────────
+function isVPSEnabled(vn)       { return !disabledVPS[vn]; }
+function isMTEnabled(vn,an)     { return !disabledMT[`${vn}_${an}`]; }
+function isEAEnabled(vn,an,m)   { return !disabledEAs[`${vn}_${an}_${m}`]; }
+function isEnabled(vn,an,m)     { return isVPSEnabled(vn) && isMTEnabled(vn,an) && isEAEnabled(vn,an,m); }
+// ── Toggle handlers ──────────────────────────────────────────────────────────
+function toggleVPSEnabled(vn,btn,e){
+  e.stopPropagation();
+  disabledVPS[vn]=!disabledVPS[vn];
+  if(!disabledVPS[vn]) delete disabledVPS[vn];
+  saveDisabled();
+  btn.classList.toggle('on', isVPSEnabled(vn));
+  btn.closest('.vps-block').classList.toggle('row-off', !isVPSEnabled(vn));
+  renderAll();
+}
+function toggleMTEnabled(vn,an,btn,e){
+  e.stopPropagation();
+  const k=`${vn}_${an}`;
+  disabledMT[k]=!disabledMT[k];
+  if(!disabledMT[k]) delete disabledMT[k];
+  saveDisabled();
+  btn.classList.toggle('on', isMTEnabled(vn,an));
+  btn.closest('.mt-block').classList.toggle('row-off', !isMTEnabled(vn,an));
+  renderAll();
+}
+// ── Filtraggio dati ──────────────────────────────────────────────────────────
 function getBrokerTime(){let bt=0;rawData.forEach(v=>(v.accounts||[]).forEach(a=>{if(a.broker_time&&a.broker_time>bt)bt=a.broker_time;}));return bt;}
 function getCutoff(){if(currentHours===0)return 0;if(currentHours==="1d"){const bt=getBrokerTime();if(bt>0)return bt-(bt%86400);const n=new Date();n.setUTCHours(0,0,0,0);return Math.floor(n.getTime()/1000);}return Math.floor(Date.now()/1000)-currentHours*3600;}
-function getAllTrades(cutoff){const a=[];rawData.forEach(vps=>{filterAccounts(vps).forEach(acc=>{(acc.trades||[]).forEach(t=>{if(!disabledEAs[`${vps.vps_name}_${acc.account_number}_${t.m}`])if(cutoff===0||t.t>=cutoff)a.push(t);});});});return a;}
+function getAllTrades(cutoff){const a=[];rawData.forEach(vps=>{filterAccounts(vps).forEach(acc=>{(acc.trades||[]).forEach(t=>{if(isEnabled(vps.vps_name,acc.account_number,t.m))if(cutoff===0||t.t>=cutoff)a.push(t);});});});return a;}
 function calcStats(trades,magic,cutoff,disabled){if(disabled)return{wr:0,pf:0,pl:0,trades:0};const f=trades.filter(t=>(magic===null||t.m===magic)&&(cutoff===0||t.t>=cutoff));if(!f.length)return{wr:0,pf:0,pl:0,trades:0};let w=0,pl=0,gp=0,gl=0;f.forEach(t=>{pl+=t.p;if(t.w){w++;gp+=t.p;}else gl+=Math.abs(t.p);});return{wr:w/f.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl,trades:f.length};}
-function calcAccStats(trades,eas,vn,an,cutoff){const en=trades.filter(t=>!disabledEAs[`${vn}_${an}_${t.m}`]).filter(t=>cutoff===0||t.t>=cutoff);if(!en.length)return{wr:0,pf:0,pl:0,trades:0};let w=0,pl=0,gp=0,gl=0;en.forEach(t=>{pl+=t.p;if(t.w){w++;gp+=t.p;}else gl+=Math.abs(t.p);});return{wr:w/en.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl,trades:en.length};}
+function calcAccStats(trades,eas,vn,an,cutoff){const en=trades.filter(t=>isEnabled(vn,an,t.m)).filter(t=>cutoff===0||t.t>=cutoff);if(!en.length)return{wr:0,pf:0,pl:0,trades:0};let w=0,pl=0,gp=0,gl=0;en.forEach(t=>{pl+=t.p;if(t.w){w++;gp+=t.p;}else gl+=Math.abs(t.p);});return{wr:w/en.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl,trades:en.length};}
 function maxDD(trades){if(!trades.length)return 0;let peak=0,dd=0,cum=0;[...trades].sort((a,b)=>a.t-b.t).forEach(t=>{cum+=t.p;if(cum>peak)peak=cum;const d=peak-cum;if(d>dd)dd=d;});return dd;}
 function streak(trades){if(!trades.length)return{type:'—',count:0};const s=[...trades].sort((a,b)=>b.t-a.t);const f=s[0].w;let c=0;for(const t of s){if(t.w!==f)break;c++;}return{type:f?'W':'L',count:c};}
 function equityCurve(trades){const s=[...trades].sort((a,b)=>a.t-b.t);let cum=0;const pts=s.map(t=>{cum+=t.p;return{x:t.t*1000,y:parseFloat(cum.toFixed(2))};});if(pts.length>400){const step=Math.ceil(pts.length/400);return pts.filter((_,i)=>i%step===0||i===pts.length-1);}return pts;}
 function dailyPL(trades){const bd={};trades.forEach(t=>{const d=new Date(t.t*1000);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;bd[k]=(bd[k]||0)+t.p;});return Object.entries(bd).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>({label:k,val:parseFloat(v.toFixed(2))}));}
 function dowPL(trades){const d=[0,0,0,0,0,0,0];trades.forEach(t=>{d[new Date(t.t*1000).getDay()]+=t.p;});return[d[1],d[2],d[3],d[4],d[5],d[6],d[0]].map(v=>parseFloat(v.toFixed(2)));}
-function eaRanking(cutoff){const bm={};rawData.forEach(vps=>{filterAccounts(vps).forEach(acc=>{(acc.trades||[]).forEach(t=>{if(disabledEAs[`${vps.vps_name}_${acc.account_number}_${t.m}`])return;if(cutoff>0&&t.t<cutoff)return;if(!bm[t.m])bm[t.m]={magic:t.m,name:'',trades:[]};bm[t.m].trades.push(t);});(acc.eas||[]).forEach(ea=>{if(!bm[ea.magic])bm[ea.magic]={magic:ea.magic,name:'',trades:[]};bm[ea.magic].name=getEAName(ea.magic,ea.name);});});});return Object.values(bm).filter(e=>e.trades.length>0).map(e=>{const{trades:tr}=e;let w=0,pl=0,gp=0,gl=0;tr.forEach(t=>{pl+=t.p;if(t.w){w++;gp+=t.p;}else gl+=Math.abs(t.p);});return{magic:e.magic,name:e.name||getEAName(e.magic,''),trades:tr.length,wr:w/tr.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl:parseFloat(pl.toFixed(2)),maxDD:parseFloat(maxDD(tr).toFixed(2)),tradeList:tr};});}
+function eaRanking(cutoff){const bm={};rawData.forEach(vps=>{filterAccounts(vps).forEach(acc=>{(acc.trades||[]).forEach(t=>{if(!isEnabled(vps.vps_name,acc.account_number,t.m))return;if(cutoff>0&&t.t<cutoff)return;if(!bm[t.m])bm[t.m]={magic:t.m,name:'',trades:[]};bm[t.m].trades.push(t);});(acc.eas||[]).forEach(ea=>{if(!bm[ea.magic])bm[ea.magic]={magic:ea.magic,name:'',trades:[]};bm[ea.magic].name=getEAName(ea.magic,ea.name);});});});return Object.values(bm).filter(e=>e.trades.length>0).map(e=>{const{trades:tr}=e;let w=0,pl=0,gp=0,gl=0;tr.forEach(t=>{pl+=t.p;if(t.w){w++;gp+=t.p;}else gl+=Math.abs(t.p);});return{magic:e.magic,name:e.name||getEAName(e.magic,''),trades:tr.length,wr:w/tr.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl:parseFloat(pl.toFixed(2)),maxDD:parseFloat(maxDD(tr).toFixed(2)),tradeList:tr};});}
 function getEAName(m,a){return eaNames[m]||a||("EA #"+m);}
 function fmtPL(n){const a=Math.abs(n);return(n>=0?"+":"-")+(a>=1000?(a/1000).toFixed(2)+"K":a.toFixed(2));}
 function fmtN(n){return n>=1000?(n/1000).toFixed(1)+"K":n.toFixed(2);}
@@ -444,10 +493,11 @@ function renderVPSList(){
     const accs=filterAccounts(vps),allT=accs.flatMap(a=>a.trades||[]);
     const agg=calcAccStats(allT,[],vps.vps_name,"all",cutoff);
     const isOpen=!!expandedVps[vps.vps_name];
+    const vpsOn=isVPSEnabled(vps.vps_name);
     const b=document.createElement("div");
-    b.className="vps-block";b.style.animationDelay=(vi*.07)+"s";
+    b.className="vps-block"+(vpsOn?'':' row-off');b.style.animationDelay=(vi*.07)+"s";
     const aggH=`<div class="mcell"><div class="mcell-label">Win Rate</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Operazioni</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accs.length}</div></div>`;
-    b.innerHTML=`<div class="vps-header ${isOpen?'open':''}" onclick="toggleVPS('${vps.vps_name}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="vps-name-group"><span class="vps-badge">${vps.vps_name}</span><div><div class="vps-name">${vps.vps_name}</div><div class="vps-meta">${accs.length} account · ${accs.reduce((s,a)=>s+(a.eas||[]).length,0)} EA</div></div></div>${aggH}</div><div class="vps-content ${isOpen?'open':''}" id="vc-${vps.vps_name}">${accs.length?accs.map(acc=>renderMT(vps,acc,cutoff)).join(""):'<div class="state-box" style="padding:16px"><span>Nessun account per il filtro.</span></div>'}</div>`;
+    b.innerHTML=`<div class="vps-header ${isOpen?'open':''}" onclick="toggleVPS('${vps.vps_name}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="vps-name-group"><span class="vps-badge">${vps.vps_name}</span><div><div class="vps-name">${vps.vps_name}</div><div class="vps-meta">${accs.length} account · ${accs.reduce((s,a)=>s+(a.eas||[]).length,0)} EA</div></div></div>${aggH}<button class="row-toggle ${vpsOn?'on':''}" title="${vpsOn?'Disabilita VPS':'Abilita VPS'}" onclick="toggleVPSEnabled('${vps.vps_name}',this,event)"></button></div><div class="vps-content ${isOpen?'open':''}" id="vc-${vps.vps_name}">${accs.length?accs.map(acc=>renderMT(vps,acc,cutoff)).join(""):'<div class="state-box" style="padding:16px"><span>Nessun account per il filtro.</span></div>'}</div>`;
     c.appendChild(b);
   });
 }
@@ -456,7 +506,8 @@ function renderMT(vps,acc,cutoff){
   const mtId=`${vps.vps_name}-${acc.account_number}`;
   const agg=calcAccStats(acc.trades||[],acc.eas||[],vps.vps_name,acc.account_number,cutoff);
   const isOpen=!!expandedMt[mtId];
-  return `<div class="mt-block"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span></div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'',cutoff)}</div></div>`;
+  const mtOn=isMTEnabled(vps.vps_name,acc.account_number);
+  return `<div class="mt-block${mtOn?'':' row-off'}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span></div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'',cutoff)}</div></div>`;
 }
 
 function renderEATable(eas,trades,vn,an,currency,cutoff){
@@ -479,11 +530,11 @@ function buildSettings(filter){
 }
 function markMod(inp){inp.classList.toggle("modified",inp.value!==inp.dataset.default&&inp.value!=="");}
 function clearOne(magic){const inp=document.querySelector(`.sp-input[data-magic="${magic}"]`);if(inp){inp.value=inp.dataset.default;inp.classList.remove("modified");}}
-function saveAllNames(){document.querySelectorAll(".sp-input[data-magic]").forEach(inp=>{const m=parseInt(inp.dataset.magic),v=inp.value.trim();if(v)eaNames[m]=v;else delete eaNames[m];});const s={};Object.entries(eaNames).forEach(([m,n])=>{if(n!==EA_DEFAULTS[m])s[m]=n;});localStorage.setItem("eaNames",JSON.stringify(s));const fb=document.getElementById("saveOk");fb.style.opacity="1";setTimeout(()=>fb.style.opacity="0",2000);renderAll();}
+function saveAllNames(){document.querySelectorAll(".sp-input[data-magic]").forEach(inp=>{const m=String(inp.dataset.magic),v=inp.value.trim();if(v)eaNames[m]=v;else delete eaNames[m];});const s={};Object.entries(eaNames).forEach(([m,n])=>{if(n!==(EA_DEFAULTS[m]||''))s[m]=n;});localStorage.setItem("eaNames",JSON.stringify(s));const fb=document.getElementById("saveOk");fb.style.opacity="1";setTimeout(()=>fb.style.opacity="0",2000);renderAll();}
 function resetAllNames(){if(!confirm("Ripristinare tutti i nomi?"))return;localStorage.removeItem("eaNames");eaNames=Object.assign({},EA_DEFAULTS);buildSettings("");renderAll();}
 function toggleVPS(name,el){expandedVps[name]=!expandedVps[name];document.getElementById("vc-"+name).classList.toggle("open",expandedVps[name]);el.querySelector(".toggle-icon").classList.toggle("open",expandedVps[name]);el.classList.toggle("open",expandedVps[name]);}
 function toggleMT(id,el){expandedMt[id]=!expandedMt[id];document.getElementById("ea-"+id).classList.toggle("open",expandedMt[id]);el.querySelector(".toggle-icon").classList.toggle("open",expandedMt[id]);el.classList.toggle("open",expandedMt[id]);}
-function toggleEA(vps,acc,magic,btn){const key=`${vps}_${acc}_${magic}`;disabledEAs[key]=!disabledEAs[key];if(!disabledEAs[key])delete disabledEAs[key];localStorage.setItem("disabledEAs",JSON.stringify(disabledEAs));btn.className="ea-toggle"+(isEnabled(vps,acc,magic)?" on":"");btn.closest("tr").className=isEnabled(vps,acc,magic)?"":"disabled";renderAll();}
+function toggleEA(vps,acc,magic,btn){const key=`${vps}_${acc}_${magic}`;disabledEAs[key]=!disabledEAs[key];if(!disabledEAs[key])delete disabledEAs[key];saveDisabled();btn.className="ea-toggle"+(isEAEnabled(vps,acc,magic)&&isMTEnabled(vps,acc)&&isVPSEnabled(vps)?" on":"");btn.closest("tr").className=isEnabled(vps,acc,magic)?"":"disabled";renderAll();}
 function toggleAllVPS(){allExpanded=!allExpanded;rawData.forEach(v=>{expandedVps[v.vps_name]=allExpanded;});document.getElementById('expandAllBtn').textContent=allExpanded?'▼ Comprimi tutto':'▶ Espandi tutto';renderVPSList();}
 function setMode(btn){currentMode=btn.dataset.mode;document.querySelectorAll("#modeGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?` active-${currentMode}`:""));updateLabel();renderAll();}
 function setPeriod(btn){const val=btn.dataset.hours;currentHours=val==="0"?0:val==="1d"?"1d":parseInt(val);document.querySelectorAll("#timeGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?" active-time":""));updateLabel();renderAll();}
