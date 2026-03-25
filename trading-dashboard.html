@@ -359,7 +359,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
       <div id="spContent"></div>
     </div>
     <div class="sp-foot">
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="btn-reset-all" onclick="resetAllNames()">Ripristina default</button>
         <button class="btn-io" onclick="exportNames()" title="Scarica i nomi come file JSON da importare su altri dispositivi">⬇ Esporta</button>
         <label class="btn-io" title="Importa nomi da un file JSON esportato in precedenza">⬆ Importa<input type="file" accept=".json" onchange="importNames(event)" style="display:none"></label>
@@ -854,21 +854,26 @@ function renderVPSList(){
 }
 
 // ── Stato salute account ────────────────────────────────────────────────────
-// Ritorna: {level:'ok'|'warn'|'stale', label, reason}
 function getAccountStatus(acc){
   const now = Math.floor(Date.now()/1000);
-  // broker_time è il timestamp dell'ultimo aggiornamento dell'EA
-  const bt = acc.broker_time || 0;
-  const ageMin = bt > 0 ? (now - bt) / 60 : 9999;
+  // Usa received_at (UTC del server Flask) — più affidabile di broker_time
+  // che dipende dal fuso orario del broker MT4/MT5
+  let age = 9999;
+  if(acc.received_at){
+    const recv = Math.floor(new Date(acc.received_at).getTime()/1000);
+    age = (now - recv) / 60;
+  } else if(acc.broker_time){
+    // Fallback: broker_time — potrebbe avere offset fuso orario
+    age = (now - acc.broker_time) / 60;
+  }
 
-  if(ageMin > 20){
-    return {level:'stale', label:`⚠ Offline ${ageMin>60?Math.floor(ageMin/60)+'h':Math.round(ageMin)+'min'}`, reason:'Nessun dato ricevuto da più di 20 minuti — EA fermo o disconnesso'};
+  if(age > 20){
+    return {level:'stale', label:`⚠ Offline ${age>60?Math.floor(age/60)+'h':Math.round(age)+'min'}`, reason:'Nessun dato ricevuto da più di 20 minuti — EA fermo o disconnesso'};
   }
-  if(ageMin > 10){
-    return {level:'warn', label:`⏱ ${Math.round(ageMin)}min fa`, reason:'Dato ricevuto da più di 10 minuti — controllare'};
+  if(age > 10){
+    return {level:'warn', label:`⏱ ${Math.round(age)}min fa`, reason:'Dato ricevuto da più di 10 minuti — controllare'};
   }
-  // Dati recenti ma trades=0 con EA attivi (sospetto)
-  const hasEAs = (acc.eas||[]).length > 0;
+  const hasEAs   = (acc.eas||[]).length > 0;
   const hasTrades = (acc.trades||[]).length > 0;
   if(hasEAs && !hasTrades){
     return {level:'warn', label:'⚠ 0 trade', reason:'EA configurati ma nessun trade in storico — controllare History_Days'};
