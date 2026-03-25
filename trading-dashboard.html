@@ -1052,10 +1052,28 @@ const EACI = {}; // chart instances del modale
 
 function destroyEAChart(id){ if(EACI[id]){EACI[id].destroy();delete EACI[id];} }
 
+// Raccoglie TUTTI i trade per un magic da rawData (senza filtro tempo)
+// rispetta solo filtri mode/terminal/enabled
+function getAllTradesForMagic(magic){
+  const a=[];
+  rawData.forEach(vps=>{
+    if(!isVPSEnabled(vps.vps_name)) return;
+    filterAccounts(vps).forEach(acc=>{
+      if(!isMTEnabled(vps.vps_name,acc.account_number)) return;
+      (acc.trades||[]).forEach(t=>{
+        if(t.m!==magic) return;
+        if(!isEAEnabled(vps.vps_name,acc.account_number,t.m)) return;
+        a.push(t);
+      });
+    });
+  });
+  return a;
+}
+
 function openEAModal(magic, name, tradeList){
   EAM.magic = magic;
   EAM.name  = name;
-  EAM.trades= tradeList;
+  EAM.trades= getAllTradesForMagic(magic); // tutti i trade, filtro tempo gestito dal modale
   EAM.hours = '1d';
   EAM.custom= false;
   // Reset pill
