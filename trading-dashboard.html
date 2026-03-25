@@ -882,7 +882,7 @@ function renderCharts(){
         onClick:(evt,els)=>{
           if(!els.length) return;
           const e=top[els[0].index];
-          openEAModal(e.magic, e.name, e.tradeList);
+          openEAModal(e.magic, e.name);
         },
         onHover:(evt,els)=>{
           evt.native.target.style.cursor=els.length?'pointer':'default';
@@ -929,7 +929,7 @@ function renderRanking(){
   });
   if(!rnk.length){document.getElementById('eaRanking').innerHTML='<div class="state-box"><span>Nessun dato disponibile.</span></div>';return;}
   eaRankingCache=rnk;
-  const rows=rnk.map((e,i)=>`<tr style="cursor:pointer" onclick="openEAModal(${e.magic},'${e.name.replace(/'/g,"\\'")}',eaRankingCache[${i}].tradeList)">
+  const rows=rnk.map((e,i)=>`<tr style="cursor:pointer" onclick="openEAModal(${e.magic},'${e.name.replace(/'/g,"\\'")})">
     <td><span class="rank-num">${i+1}</span></td>
     <td><div class="rank-name">${e.name}</div><div class="rank-magic">Magic: ${e.magic}</div></td>
     <td class="td-r" style="color:var(--text)">${e.trades}</td>
@@ -1037,8 +1037,7 @@ function renderEATable(eas,trades,vn,an,currency){
   const rows=eas.map(ea=>{
     const on=isEnabled(vn,an,ea.magic);
     const s=calcStats(trades,ea.magic,!on);
-    const eaTrades = trades.filter(t=>t.m===ea.magic);
-    return`<tr class="${on?'':'disabled'}"><td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vn}',${an},${ea.magic},this)"></button></td><td style="cursor:pointer" onclick="openEAModal(${ea.magic},'${getEAName(ea.magic,ea.name).replace(/'/g,"\\'")}',${JSON.stringify(eaTrades)})"><div class="ea-name" style="color:var(--text2)">${getEAName(ea.magic,ea.name)}</div><div class="ea-magic-sub">Magic: ${ea.magic} &nbsp;·&nbsp; <span style="color:var(--accent);font-size:8px">▶ dettaglio</span></div></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(s.pf)}">${s.pf>=99?'∞':s.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(s.pl)}">${fmtPL(s.pl)}</span><div style="font-size:8px;color:var(--text3)">${currency}</div></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${s.trades}</td></tr>`;
+    return`<tr class="${on?'':'disabled'}"><td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vn}',${an},${ea.magic},this)"></button></td><td style="cursor:pointer" onclick="openEAModal(${ea.magic},'${getEAName(ea.magic,ea.name).replace(/'/g,"\\'")}')"><div class="ea-name" style="color:var(--text2)">${getEAName(ea.magic,ea.name)}</div><div class="ea-magic-sub">Magic: ${ea.magic} &nbsp;·&nbsp; <span style="color:var(--accent);font-size:8px">▶ dettaglio</span></div></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(s.pf)}">${s.pf>=99?'∞':s.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(s.pl)}">${fmtPL(s.pl)}</span><div style="font-size:8px;color:var(--text3)">${currency}</div></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${s.trades}</td></tr>`;
   }).join('');
   return`<table class="ea-table"><thead><tr><th style="width:38px"></th><th>EA / Magic</th><th>Win Rate</th><th class="r">P.Factor</th><th class="r">P&L</th><th class="r">Trade</th></tr></thead><tbody>${rows}<tr class="total-row"><td></td><td><strong>Totale Account</strong></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${total.wr}%;background:${wrColor(total.wr)}"></div></div><span class="wr-val" style="color:${wrColor(total.wr)};font-size:12px">${total.wr.toFixed(1)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(total.pf)}">${total.pf>=99?'∞':total.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(total.pl)}" style="font-size:13px">${fmtPL(total.pl)}</span></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700"><strong>${total.trades}</strong></td></tr></tbody></table>`;
 }
@@ -1070,7 +1069,7 @@ function getAllTradesForMagic(magic){
   return a;
 }
 
-function openEAModal(magic, name, tradeList){
+function openEAModal(magic, name){
   EAM.magic = magic;
   EAM.name  = name;
   EAM.trades= getAllTradesForMagic(magic); // tutti i trade, filtro tempo gestito dal modale
