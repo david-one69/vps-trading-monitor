@@ -176,6 +176,30 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .btn-io{background:var(--bg4);border:1px solid var(--border2);color:var(--text2);font-size:11px;border-radius:5px;padding:4px 10px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
 .btn-io:hover{color:var(--accent);border-color:rgba(240,165,0,.35);}
 .save-ok{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;font-family:'JetBrains Mono',monospace;}
+/* Alert badges */
+.alert-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;letter-spacing:.04em;
+  white-space:nowrap;
+}
+.alert-stale { background:rgba(255,61,94,.12); color:var(--red);    border:1px solid rgba(255,61,94,.3); }
+.alert-warn  { background:rgba(240,165,0,.12); color:var(--accent); border:1px solid rgba(240,165,0,.3); }
+.alert-ok    { background:rgba(0,217,126,.1);  color:var(--green);  border:1px solid rgba(0,217,126,.25);}
+/* Stale MT block gets subtle red left border */
+.mt-block.mt-stale>.mt-header { border-left:3px solid var(--red); }
+.mt-block.mt-warn>.mt-header  { border-left:3px solid var(--accent); }
+/* Alert summary bar at top */
+.alert-bar{
+  display:flex;flex-wrap:wrap;gap:8px;
+  background:rgba(255,61,94,.06);border:1px solid rgba(255,61,94,.2);
+  border-radius:var(--radius);padding:10px 16px;margin-bottom:14px;
+  align-items:center;
+}
+.alert-bar-title{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-right:4px;}
+.alert-item{font-size:10px;color:var(--text2);}
+.alert-item strong{color:var(--text);}
+#alertBar{display:none;}
 footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-top:1px solid var(--border);margin-top:20px;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;}
 @media(max-width:1300px){.kpi-strip{grid-template-columns:repeat(3,1fr);}.chart-grid-2{grid-template-columns:1fr 1fr;}}
 @media(max-width:1000px){.vps-header{grid-template-columns:20px 1fr repeat(3,95px);}.mt-header{grid-template-columns:20px 1fr repeat(3,82px);}.chart-grid-2,.chart-grid-2b{grid-template-columns:1fr;}}
@@ -256,6 +280,11 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 <main>
   <div class="kpi-strip" id="kpiStrip">
     <div class="state-box" style="grid-column:1/-1;padding:40px"><div class="spinner"></div><span>Connessione al server...</span></div>
+  </div>
+  <!-- Alert bar: appare solo quando ci sono problemi -->
+  <div class="alert-bar" id="alertBar">
+    <span class="alert-bar-title">⚠ Attenzione</span>
+    <div id="alertList" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;flex:1"></div>
   </div>
   <div class="sec-header">
     <span class="sec-title">Analisi Performance</span>
@@ -824,12 +853,64 @@ function renderVPSList(){
   });
 }
 
+// ── Stato salute account ────────────────────────────────────────────────────
+// Ritorna: {level:'ok'|'warn'|'stale', label, reason}
+function getAccountStatus(acc){
+  const now = Math.floor(Date.now()/1000);
+  // broker_time è il timestamp dell'ultimo aggiornamento dell'EA
+  const bt = acc.broker_time || 0;
+  const ageMin = bt > 0 ? (now - bt) / 60 : 9999;
+
+  if(ageMin > 20){
+    return {level:'stale', label:`⚠ Offline ${ageMin>60?Math.floor(ageMin/60)+'h':Math.round(ageMin)+'min'}`, reason:'Nessun dato ricevuto da più di 20 minuti — EA fermo o disconnesso'};
+  }
+  if(ageMin > 10){
+    return {level:'warn', label:`⏱ ${Math.round(ageMin)}min fa`, reason:'Dato ricevuto da più di 10 minuti — controllare'};
+  }
+  // Dati recenti ma trades=0 con EA attivi (sospetto)
+  const hasEAs = (acc.eas||[]).length > 0;
+  const hasTrades = (acc.trades||[]).length > 0;
+  if(hasEAs && !hasTrades){
+    return {level:'warn', label:'⚠ 0 trade', reason:'EA configurati ma nessun trade in storico — controllare History_Days'};
+  }
+  return {level:'ok', label:'', reason:''};
+}
+
+// Renderizza la barra alert globale
+function renderAlerts(){
+  const problems=[];
+  rawData.forEach(vps=>{
+    (vps.accounts||[]).forEach(acc=>{
+      const s=getAccountStatus(acc);
+      if(s.level!=='ok'){
+        problems.push({vps:vps.vps_name, acc:acc.account_number, terminal:acc.terminal||'MT4', ...s});
+      }
+    });
+  });
+  const bar=document.getElementById('alertBar');
+  const list=document.getElementById('alertList');
+  if(!problems.length){ bar.style.display='none'; return; }
+  bar.style.display='flex';
+  list.innerHTML=problems.map(p=>`
+    <div class="alert-item">
+      <span class="alert-badge ${p.level==='stale'?'alert-stale':'alert-warn'}">${p.label}</span>
+      &nbsp;<strong>${p.vps}</strong> / <strong>#${p.acc}</strong>
+      <span style="color:var(--text3);font-size:9px"> — ${p.reason}</span>
+    </div>`).join('');
+}
+
 function renderMT(vps,acc){
   const mtId=`${vps.vps_name}-${acc.account_number}`;
   const agg=calcAccStats(acc.trades||[],vps.vps_name,acc.account_number);
   const isOpen=!!expandedMt[mtId];
   const mtOn=isMTEnabled(vps.vps_name,acc.account_number);
-  return `<div class="mt-block${mtOn?'':' row-off'}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span></div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'')}</div></div>`;
+  const status=getAccountStatus(acc);
+  // Badge visivo accanto al nome account
+  const alertBadge=status.level!=='ok'
+    ?`<span class="alert-badge ${status.level==='stale'?'alert-stale':'alert-warn'}" title="${status.reason}">${status.label}</span>`
+    :`<span class="alert-badge alert-ok">✓ Live</span>`;
+  const staleClass=status.level==='stale'?' mt-stale':status.level==='warn'?' mt-warn':'';
+  return `<div class="mt-block${mtOn?'':' row-off'}${staleClass}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span>${alertBadge}</div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'')}</div></div>`;
 }
 
 function renderEATable(eas,trades,vn,an,currency){
@@ -968,7 +1049,7 @@ function updateLabel(){
     :(p[currentHours]||'Periodo');
   document.getElementById("filterLabel").textContent=`${period} · ${m[currentMode]}${t[currentTerminal]}`;
 }
-function renderAll(){renderKPI();renderCharts();renderRanking();renderVPSList();}
+function renderAll(){renderKPI();renderAlerts();renderCharts();renderRanking();renderVPSList();}
 updateLabel();fetchData();startTimer();
 </script>
 </body>
