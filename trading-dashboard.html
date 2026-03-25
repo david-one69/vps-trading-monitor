@@ -204,7 +204,14 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 @media(max-width:1300px){.kpi-strip{grid-template-columns:repeat(3,1fr);}.chart-grid-2{grid-template-columns:1fr 1fr;}}
 @media(max-width:1000px){.vps-header{grid-template-columns:20px 1fr repeat(3,95px);}.mt-header{grid-template-columns:20px 1fr repeat(3,82px);}.chart-grid-2,.chart-grid-2b{grid-template-columns:1fr;}}
 @media(max-width:700px){header{height:auto;padding:10px 14px;}main{padding:12px;}.kpi-strip{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:20px 1fr repeat(2,80px);}.mt-header{grid-template-columns:20px 1fr repeat(2,72px);}}
-/* ── EA Detail Modal ─────────────────────────────── */
+/* Ranking rows cliccabili */
+.ranking-table tr[onclick]:hover td{background:rgba(240,165,0,.06)!important;}
+.ranking-table tr[onclick]:hover .rank-name{color:var(--accent);}
+/* EA Detail Modal ─────────────────────────────── */
+.ea-modal-overlay{animation:fadeIn .18s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.ea-modal{animation:slideUp .22s cubic-bezier(.22,.68,0,1.1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 .ea-modal-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);
   z-index:500;align-items:flex-start;justify-content:center;
@@ -876,6 +883,9 @@ function renderCharts(){
           if(!els.length) return;
           const e=top[els[0].index];
           openEAModal(e.magic, e.name, e.tradeList);
+        },
+        onHover:(evt,els)=>{
+          evt.native.target.style.cursor=els.length?'pointer':'default';
         }
       }
     });
@@ -1027,7 +1037,8 @@ function renderEATable(eas,trades,vn,an,currency){
   const rows=eas.map(ea=>{
     const on=isEnabled(vn,an,ea.magic);
     const s=calcStats(trades,ea.magic,!on);
-    return`<tr class="${on?'':'disabled'}"><td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vn}',${an},${ea.magic},this)"></button></td><td><div class="ea-name">${getEAName(ea.magic,ea.name)}</div><div class="ea-magic-sub">Magic: ${ea.magic}</div></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(s.pf)}">${s.pf>=99?'∞':s.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(s.pl)}">${fmtPL(s.pl)}</span><div style="font-size:8px;color:var(--text3)">${currency}</div></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${s.trades}</td></tr>`;
+    const eaTrades = trades.filter(t=>t.m===ea.magic);
+    return`<tr class="${on?'':'disabled'}"><td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vn}',${an},${ea.magic},this)"></button></td><td style="cursor:pointer" onclick="openEAModal(${ea.magic},'${getEAName(ea.magic,ea.name).replace(/'/g,"\\'")}',${JSON.stringify(eaTrades)})"><div class="ea-name" style="color:var(--text2)">${getEAName(ea.magic,ea.name)}</div><div class="ea-magic-sub">Magic: ${ea.magic} &nbsp;·&nbsp; <span style="color:var(--accent);font-size:8px">▶ dettaglio</span></div></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(s.pf)}">${s.pf>=99?'∞':s.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(s.pl)}">${fmtPL(s.pl)}</span><div style="font-size:8px;color:var(--text3)">${currency}</div></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${s.trades}</td></tr>`;
   }).join('');
   return`<table class="ea-table"><thead><tr><th style="width:38px"></th><th>EA / Magic</th><th>Win Rate</th><th class="r">P.Factor</th><th class="r">P&L</th><th class="r">Trade</th></tr></thead><tbody>${rows}<tr class="total-row"><td></td><td><strong>Totale Account</strong></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${total.wr}%;background:${wrColor(total.wr)}"></div></div><span class="wr-val" style="color:${wrColor(total.wr)};font-size:12px">${total.wr.toFixed(1)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(total.pf)}">${total.pf>=99?'∞':total.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(total.pl)}" style="font-size:13px">${fmtPL(total.pl)}</span></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700"><strong>${total.trades}</strong></td></tr></tbody></table>`;
 }
