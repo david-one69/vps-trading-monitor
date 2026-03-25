@@ -204,7 +204,50 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 @media(max-width:1300px){.kpi-strip{grid-template-columns:repeat(3,1fr);}.chart-grid-2{grid-template-columns:1fr 1fr;}}
 @media(max-width:1000px){.vps-header{grid-template-columns:20px 1fr repeat(3,95px);}.mt-header{grid-template-columns:20px 1fr repeat(3,82px);}.chart-grid-2,.chart-grid-2b{grid-template-columns:1fr;}}
 @media(max-width:700px){header{height:auto;padding:10px 14px;}main{padding:12px;}.kpi-strip{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:20px 1fr repeat(2,80px);}.mt-header{grid-template-columns:20px 1fr repeat(2,72px);}}
-/* Date range picker */
+/* ── EA Detail Modal ─────────────────────────────── */
+.ea-modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);
+  z-index:500;align-items:flex-start;justify-content:center;
+  padding:24px 16px 40px;overflow-y:auto;backdrop-filter:blur(6px);
+}
+.ea-modal-overlay.open{display:flex;}
+.ea-modal{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:14px;
+  width:100%;max-width:920px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;
+}
+.ea-modal-head{
+  padding:20px 24px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;
+}
+.ea-modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.ea-modal-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);}
+.ea-modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px;transition:color .15s;line-height:1;}
+.ea-modal-close:hover{color:var(--text);}
+.ea-modal-period{
+  display:flex;align-items:center;gap:8px;padding:10px 24px;
+  border-bottom:1px solid var(--border);background:var(--bg3);flex-wrap:wrap;
+}
+.ea-modal-period span{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+.ea-modal-body{padding:20px 24px;}
+.ea-kpi-row{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;
+}
+.ea-kpi{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;
+}
+.ea-kpi-label{font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:6px;font-weight:700;}
+.ea-kpi-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;line-height:1;}
+.ea-kpi-sub{font-size:9px;color:var(--text3);margin-top:3px;}
+.ea-charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.ea-chart-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;}
+.ea-chart-title{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:10px;}
+@media(max-width:700px){
+  .ea-kpi-row{grid-template-columns:repeat(3,1fr);}
+  .ea-charts-row{grid-template-columns:1fr;}
+}
+
 .date-picker-wrap{position:relative;}
 .date-popover{
   display:none;position:absolute;top:calc(100% + 8px);right:0;
@@ -348,7 +391,61 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </main>
 <footer>VPS Trading Monitor &nbsp;·&nbsp; Aggiornamento automatico ogni 60s &nbsp;·&nbsp; Analytics calcolate in tempo reale nel browser</footer>
 </div>
-<div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+<!-- ══ EA DETAIL MODAL ══ -->
+<div class="ea-modal-overlay" id="eaModalOverlay" onclick="if(event.target===this)closeEAModal()">
+  <div class="ea-modal">
+    <div class="ea-modal-head">
+      <div>
+        <div class="ea-modal-title" id="eaModalTitle">—</div>
+        <div class="ea-modal-sub" id="eaModalSub">—</div>
+      </div>
+      <button class="ea-modal-close" onclick="closeEAModal()">✕</button>
+    </div>
+    <div class="ea-modal-period">
+      <span>Periodo:</span>
+      <div class="pill-group" id="eaPeriodGroup">
+        <button class="pill-btn active-time" data-ep="1d"  onclick="setEAPeriod(this)">1G</button>
+        <button class="pill-btn" data-ep="168"  onclick="setEAPeriod(this)">7G</button>
+        <button class="pill-btn" data-ep="720"  onclick="setEAPeriod(this)">30G</button>
+        <button class="pill-btn" data-ep="0"    onclick="setEAPeriod(this)">TOT</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:4px;">
+        <div class="date-field"><label style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:3px">Dal</label>
+          <input type="date" id="eaDateFrom" style="background:var(--bg4);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:10px;padding:4px 7px;outline:none;font-family:'JetBrains Mono',monospace;color-scheme:dark;width:120px" onchange="applyEACustomRange()"/>
+        </div>
+        <div class="date-field"><label style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:3px">Al</label>
+          <input type="date" id="eaDateTo" style="background:var(--bg4);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:10px;padding:4px 7px;outline:none;font-family:'JetBrains Mono',monospace;color-scheme:dark;width:120px" onchange="applyEACustomRange()"/>
+        </div>
+      </div>
+    </div>
+    <div class="ea-modal-body">
+      <div class="ea-kpi-row" id="eaModalKPI"></div>
+      <div style="margin-bottom:14px;">
+        <div class="ea-chart-title">Equity Curve</div>
+        <div style="height:180px"><canvas id="eaModalEquity"></canvas></div>
+      </div>
+      <div class="ea-charts-row">
+        <div class="ea-chart-card">
+          <div class="ea-chart-title">P&L Giornaliero</div>
+          <div style="height:150px"><canvas id="eaModalDaily"></canvas></div>
+        </div>
+        <div class="ea-chart-card">
+          <div class="ea-chart-title">Win / Loss</div>
+          <div style="position:relative;height:130px">
+            <canvas id="eaModalDonut"></canvas>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+              <div id="eaModalWR" style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700"></div>
+              <div style="font-size:10px;color:var(--text3)">Win Rate</div>
+            </div>
+          </div>
+          <div id="eaModalWLStats" style="display:flex;gap:16px;justify-content:center;margin-top:10px;font-size:11px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+ onclick="if(event.target===this)closeSettings()">
   <div class="settings-panel">
     <div class="sp-head">
       <div><h2>⚙ Gestione Nomi EA</h2><p>Modifica i nomi per ogni Magic Number · salvati nel browser</p></div>
@@ -774,6 +871,11 @@ function renderCharts(){
             title:items=>top[items[0].dataIndex].name,
             label:i=>' P&L: '+fmtPL(i.parsed.x)
           }}
+        },
+        onClick:(evt,els)=>{
+          if(!els.length) return;
+          const e=top[els[0].index];
+          openEAModal(e.magic, e.name, e.tradeList);
         }
       }
     });
@@ -804,6 +906,7 @@ function renderCharts(){
   CI['dow']=new Chart(document.getElementById('dowChart').getContext('2d'),{type:'bar',data:{labels:['Lun','Mar','Mer','Gio','Ven','Sab','Dom'],datasets:[{label:'P&L',data:dw,backgroundColor:dw.map(v=>cc(v)),borderColor:dw.map(v=>cb(v)),borderWidth:1,borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(29,33,64,0.5)'},ticks:{callback:v=>fmtPL(v)}}},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:i=>' P&L: '+fmtPL(i.parsed.y)}}}}});
 }
 
+let eaRankingCache=[];
 function renderRanking(){
   const sk=document.getElementById('rankSort').value;
   const rnk=eaRanking().sort((a,b)=>{
@@ -815,7 +918,8 @@ function renderRanking(){
     return 0;
   });
   if(!rnk.length){document.getElementById('eaRanking').innerHTML='<div class="state-box"><span>Nessun dato disponibile.</span></div>';return;}
-  const rows=rnk.map((e,i)=>`<tr>
+  eaRankingCache=rnk;
+  const rows=rnk.map((e,i)=>`<tr style="cursor:pointer" onclick="openEAModal(${e.magic},'${e.name.replace(/'/g,"\\'")}',eaRankingCache[${i}].tradeList)">
     <td><span class="rank-num">${i+1}</span></td>
     <td><div class="rank-name">${e.name}</div><div class="rank-magic">Magic: ${e.magic}</div></td>
     <td class="td-r" style="color:var(--text)">${e.trades}</td>
@@ -929,6 +1033,138 @@ function renderEATable(eas,trades,vn,an,currency){
 }
 
 function sparkSVG(trades,w=80,h=28){if(!trades||trades.length<2)return`<svg width="${w}" height="${h}"></svg>`;const s=[...trades].sort((a,b)=>a.t-b.t).slice(-30);let cum=0;const pts=s.map(t=>{cum+=t.p;return cum;});const mn=Math.min(...pts),mx=Math.max(...pts),range=mx-mn||1;const xs=pts.map((_,i)=>i*(w-2)/(pts.length-1)+1);const ys=pts.map(p=>h-2-((p-mn)/range)*(h-4));const d=xs.map((x,i)=>(i===0?'M':'L')+x.toFixed(1)+','+ys[i].toFixed(1)).join(' ');const col=pts[pts.length-1]>=0?'#00d97e':'#ff3d5e';return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path d="${d}" stroke="${col}" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>`;}
+// ══════════════════════════════════════════════════════════════
+//  EA DETAIL MODAL
+// ══════════════════════════════════════════════════════════════
+const EAM = { magic:null, name:'', trades:[], hours:'1d', customFrom:0, customTo:0, custom:false };
+const EACI = {}; // chart instances del modale
+
+function destroyEAChart(id){ if(EACI[id]){EACI[id].destroy();delete EACI[id];} }
+
+function openEAModal(magic, name, tradeList){
+  EAM.magic = magic;
+  EAM.name  = name;
+  EAM.trades= tradeList;
+  EAM.hours = '1d';
+  EAM.custom= false;
+  // Reset pill
+  document.querySelectorAll('#eaPeriodGroup .pill-btn').forEach(b=>{
+    b.className='pill-btn'+(b.dataset.ep==='1d'?' active-time':'');
+  });
+  // Clear date inputs
+  document.getElementById('eaDateFrom').value='';
+  document.getElementById('eaDateTo').value='';
+  document.getElementById('eaModalTitle').textContent=name;
+  document.getElementById('eaModalSub').textContent='Magic: '+magic;
+  document.getElementById('eaModalOverlay').classList.add('open');
+  renderEAModal();
+}
+
+function closeEAModal(){
+  document.getElementById('eaModalOverlay').classList.remove('open');
+  ['eaEq','eaDaily','eaDonut'].forEach(destroyEAChart);
+}
+
+function setEAPeriod(btn){
+  EAM.hours  = btn.dataset.ep==='0'?0:btn.dataset.ep==='1d'?'1d':parseInt(btn.dataset.ep);
+  EAM.custom = false;
+  document.querySelectorAll('#eaPeriodGroup .pill-btn').forEach(b=>b.className='pill-btn'+(b===btn?' active-time':''));
+  renderEAModal();
+}
+
+function applyEACustomRange(){
+  const f=document.getElementById('eaDateFrom').value;
+  const t=document.getElementById('eaDateTo').value;
+  if(!f||!t) return;
+  EAM.customFrom=Math.floor(new Date(f).getTime()/1000);
+  EAM.customTo  =Math.floor(new Date(t+'T23:59:59').getTime()/1000);
+  if(EAM.customFrom>EAM.customTo) return;
+  EAM.custom=true;
+  document.querySelectorAll('#eaPeriodGroup .pill-btn').forEach(b=>b.className='pill-btn');
+  renderEAModal();
+}
+
+function getEAModalTrades(){
+  const all = EAM.trades;
+  if(!all.length) return [];
+  if(EAM.custom) return all.filter(t=>t.t>=EAM.customFrom&&t.t<=EAM.customTo);
+  if(EAM.hours===0) return all;
+  if(EAM.hours==='1d'){
+    const bt=getBrokerTime();
+    const from=bt>0?bt-(bt%86400):(()=>{const n=new Date();n.setUTCHours(0,0,0,0);return Math.floor(n.getTime()/1000);})();
+    return all.filter(t=>t.t>=from);
+  }
+  const from=Math.floor(Date.now()/1000)-EAM.hours*3600;
+  return all.filter(t=>t.t>=from);
+}
+
+function renderEAModal(){
+  const trades=getEAModalTrades();
+  const TT2={backgroundColor:'rgba(8,10,22,0.97)',borderColor:'rgba(29,33,64,0.8)',borderWidth:1,titleColor:'#d4d9f0',bodyColor:'rgba(102,110,156,0.9)',padding:10,displayColors:false,titleFont:{family:"'JetBrains Mono',monospace",size:10},bodyFont:{family:"'JetBrains Mono',monospace",size:10}};
+
+  // ── KPI ──────────────────────────────────────────────────────
+  let wins=0,pl=0,gp=0,gl=0;
+  trades.forEach(t=>{pl+=t.p;if(t.w){wins++;gp+=t.p;}else gl+=Math.abs(t.p);});
+  const wr  = trades.length?wins/trades.length*100:0;
+  const pf  = gl>0?gp/gl:(gp>0?99:0);
+  const dd  = maxDD(trades);
+  const ddp = maxDDpct(trades, (() => {
+    // Cerca il balance medio degli account che ospitano questo magic
+    let bals=[];
+    rawData.forEach(vps=>filterAccounts(vps).forEach(acc=>{
+      if((acc.eas||[]).find(e=>e.magic==EAM.magic)&&acc.balance>0) bals.push(acc.balance);
+    }));
+    return bals.length?bals.reduce((a,b)=>a+b,0)/bals.length:0;
+  })());
+
+  const kpis=[
+    {label:'P&L',val:fmtPL(pl),sub:trades.length+' operazioni',cls:plCls(pl)},
+    {label:'Win Rate',val:wr.toFixed(1)+'%',sub:wins+'W / '+(trades.length-wins)+'L',cls:wr>=65?'pos':wr>=50?'acc':'neg'},
+    {label:'Profit Factor',val:pf>=99?'∞':pf.toFixed(2),sub:gl>0?'G '+fmtN(gp)+' / L '+fmtN(gl):'Solo vincite',cls:pfCls(pf)==='pf-h'?'pos':pfCls(pf)==='pf-m'?'acc':'neg'},
+    {label:'Max Drawdown',val:dd>0?fmtN(dd):'—',sub:ddp>0?ddp.toFixed(1)+'%':'',cls:'neg'},
+    {label:'Operazioni',val:trades.length+'',sub:trades.length?'nel periodo':'nessuna',cls:'neu'},
+  ];
+  document.getElementById('eaModalKPI').innerHTML=kpis.map(k=>`
+    <div class="ea-kpi">
+      <div class="ea-kpi-label">${k.label}</div>
+      <div class="ea-kpi-val ${k.cls}">${k.val}</div>
+      <div class="ea-kpi-sub">${k.sub}</div>
+    </div>`).join('');
+
+  // ── Equity Curve ──────────────────────────────────────────────
+  destroyEAChart('eaEq');
+  const eqPts=equityCurve(trades);
+  if(eqPts.length>1){
+    const fin=eqPts[eqPts.length-1].y;
+    const ctx=document.getElementById('eaModalEquity').getContext('2d');
+    const g=ctx.createLinearGradient(0,0,0,180);
+    g.addColorStop(0,fin>=0?'rgba(0,217,126,0.2)':'rgba(255,61,94,0.2)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    EACI['eaEq']=new Chart(ctx,{type:'line',data:{datasets:[{data:eqPts,borderColor:fin>=0?'#00d97e':'#ff3d5e',backgroundColor:g,tension:0.3,pointRadius:0,pointHoverRadius:4,borderWidth:2,fill:true,parsing:{xAxisKey:'x',yAxisKey:'y'}}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{type:'linear',ticks:{maxTicksLimit:8,callback:v=>{const d=new Date(v);return d.getDate()+'/'+(d.getMonth()+1);}},grid:{color:'rgba(29,33,64,0.5)'}},y:{grid:{color:'rgba(29,33,64,0.5)'},ticks:{callback:v=>fmtPL(v)}}},plugins:{legend:{display:false},tooltip:{...TT2,callbacks:{title:i=>{const d=new Date(i[0].parsed.x);return d.toLocaleDateString('it-IT');},label:i=>'P&L: '+fmtPL(i.parsed.y)}}}}});
+  }
+
+  // ── Daily P&L ─────────────────────────────────────────────────
+  destroyEAChart('eaDaily');
+  const dp=dailyPL(trades);
+  if(dp.length){
+    const shown=dp.slice(-60);
+    EACI['eaDaily']=new Chart(document.getElementById('eaModalDaily').getContext('2d'),{type:'bar',data:{labels:shown.map(d=>d.label.slice(5)),datasets:[{data:shown.map(d=>d.val),backgroundColor:shown.map(d=>cc(d.val)),borderColor:shown.map(d=>cb(d.val)),borderWidth:1,borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false},ticks:{maxTicksLimit:12,maxRotation:0}},y:{grid:{color:'rgba(29,33,64,0.5)'},ticks:{callback:v=>fmtPL(v)}}},plugins:{legend:{display:false},tooltip:{...TT2,callbacks:{label:i=>'P&L: '+fmtPL(i.parsed.y)}}}}});
+  }
+
+  // ── Donut ─────────────────────────────────────────────────────
+  destroyEAChart('eaDonut');
+  const losses=trades.length-wins;
+  document.getElementById('eaModalWR').textContent=trades.length?wr.toFixed(1)+'%':'—';
+  document.getElementById('eaModalWR').className=wr>=65?'pos':wr>=50?'acc':'neg';
+  document.getElementById('eaModalWLStats').innerHTML=`
+    <span><span style="color:var(--green);font-weight:700;font-family:'JetBrains Mono',monospace">${wins}</span> <span style="color:var(--text3);font-size:9px">WIN</span></span>
+    <span><span style="color:var(--red);font-weight:700;font-family:'JetBrains Mono',monospace">${losses}</span> <span style="color:var(--text3);font-size:9px">LOSS</span></span>
+    <span><span style="color:var(--text);font-weight:700;font-family:'JetBrains Mono',monospace">${trades.length}</span> <span style="color:var(--text3);font-size:9px">TOT</span></span>`;
+  if(trades.length){
+    EACI['eaDonut']=new Chart(document.getElementById('eaModalDonut').getContext('2d'),{type:'doughnut',data:{labels:['Win','Loss'],datasets:[{data:[wins,losses],backgroundColor:['rgba(0,217,126,0.75)','rgba(255,61,94,0.65)'],borderColor:['#00d97e','#ff3d5e'],borderWidth:1.5,hoverOffset:4}]},options:{cutout:'70%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT2}}}});
+  }
+}
+
 function openSettings(){buildSettings("");document.getElementById("settingsOverlay").classList.add("open");}
 function closeSettings(){document.getElementById("settingsOverlay").classList.remove("open");}
 
