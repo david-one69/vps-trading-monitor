@@ -930,7 +930,7 @@ function renderRanking(){
   });
   if(!rnk.length){document.getElementById('eaRanking').innerHTML='<div class="state-box"><span>Nessun dato disponibile.</span></div>';return;}
   eaRankingCache=rnk;
-  const rows=rnk.map((e,i)=>`<tr style="cursor:pointer" onclick="openEAModal(${e.magic},'${e.name.replace(/'/g,"\\'")}')">`
+  const rows=rnk.map((e,i)=>`<tr style="cursor:pointer" onclick="openEAModal(${e.magic},'${e.name.replace(/'/g,"\\'")}')">
     <td><span class="rank-num">${i+1}</span></td>
     <td><div class="rank-name">${e.name}</div><div class="rank-magic">Magic: ${e.magic}</div></td>
     <td class="td-r" style="color:var(--text)">${e.trades}</td>
