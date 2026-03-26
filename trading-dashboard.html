@@ -291,7 +291,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 <header>
   <div class="logo">
     <div class="logo-icon">VT</div>
-    <div><div class="logo-text">VPS TRADING MONITOR</div><div class="logo-sub">Multi-VPS · EA Analytics Dashboard</div></div>
+    <div><div class="logo-text">VPS TRADING MONITOR</div><div class="logo-sub">Multi-VPS · EA Analytics Dashboard · <span id="verHeader"></span></div></div>
   </div>
   <div class="header-right">
     <div class="live-badge">Live</div>
@@ -396,7 +396,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
     <div class="ranking-wrap" id="eaRanking"><div class="state-box"><div class="spinner"></div></div></div>
   </div>
 </main>
-<footer>VPS Trading Monitor &nbsp;·&nbsp; Aggiornamento automatico ogni 60s &nbsp;·&nbsp; Analytics calcolate in tempo reale nel browser</footer>
+<footer>VPS Trading Monitor <span id="verTag"></span> &nbsp;·&nbsp; Aggiornamento automatico ogni 60s &nbsp;·&nbsp; Analytics calcolate in tempo reale nel browser</footer>
 </div>
 <!-- ══ EA DETAIL MODAL ══ -->
 <div class="ea-modal-overlay" id="eaModalOverlay" onclick="if(event.target===this)closeEAModal()">
@@ -452,7 +452,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
   </div>
 </div>
 
- onclick="if(event.target===this)closeSettings()">
+<div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
   <div class="settings-panel">
     <div class="sp-head">
       <div><h2>⚙ Gestione Nomi EA</h2><p>Modifica i nomi per ogni Magic Number · salvati nel browser</p></div>
@@ -475,6 +475,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
+const APP_VERSION="4.1.0";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -929,7 +930,7 @@ function renderRanking(){
   });
   if(!rnk.length){document.getElementById('eaRanking').innerHTML='<div class="state-box"><span>Nessun dato disponibile.</span></div>';return;}
   eaRankingCache=rnk;
-  const rows=rnk.map((e,i)=>`<tr style="cursor:pointer" onclick="openEAModal(${e.magic},'${e.name.replace(/'/g,"\\'")})">
+  const rows=rnk.map((e,i)=>`<tr style="cursor:pointer" onclick="openEAModal(${e.magic},'${e.name.replace(/'/g,"\\'")}')">`
     <td><span class="rank-num">${i+1}</span></td>
     <td><div class="rank-name">${e.name}</div><div class="rank-magic">Magic: ${e.magic}</div></td>
     <td class="td-r" style="color:var(--text)">${e.trades}</td>
@@ -1319,6 +1320,10 @@ function updateLabel(){
   document.getElementById("filterLabel").textContent=`${period} · ${m[currentMode]}${t[currentTerminal]}`;
 }
 function renderAll(){renderKPI();renderAlerts();renderCharts();renderRanking();renderVPSList();}
+// ── Version display ──
+document.getElementById('verHeader').textContent='v'+APP_VERSION;
+document.getElementById('verTag').textContent='v'+APP_VERSION;
+document.title='VPS Trading Monitor v'+APP_VERSION;
 updateLabel();fetchData();startTimer();
 </script>
 </body>
