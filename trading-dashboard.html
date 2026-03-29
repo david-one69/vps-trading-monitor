@@ -481,7 +481,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.1.4";
+const APP_VERSION="4.1.5";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -1345,20 +1345,20 @@ function updateLabel(){
   document.getElementById("filterLabel").textContent=`${period} · ${m[currentMode]}${t[currentTerminal]}`;
 }
 function resetFilters(){
-  // Ripristina: Tutti + MT4+5 + TOT (tutto acceso)
+  // 1. Ripristina filtri: Tutti + MT4+5 + TOT
   currentMode     = "both";
   currentTerminal = "both";
   currentHours    = 0;
   usingCustom     = false;
-  // Reset UI pill mode → Tutti
+  // Reset pill mode → Tutti
   document.querySelectorAll("#modeGroup .pill-btn").forEach(b=>{
     b.className = "pill-btn" + (b.dataset.mode==="both" ? " active-both" : "");
   });
-  // Reset UI pill terminal → MT4+5
+  // Reset pill terminal → MT4+5
   document.querySelectorAll("#termGroup .pill-btn").forEach(b=>{
     b.className = "pill-btn" + (b.dataset.term==="both" ? " active-term" : "");
   });
-  // Reset UI pill periodo → TOT
+  // Reset pill periodo → TOT
   document.querySelectorAll("#timeGroup .pill-btn").forEach(b=>{
     b.className = "pill-btn" + (b.dataset.hours==="0" ? " active-time" : "");
   });
@@ -1369,6 +1369,13 @@ function resetFilters(){
   document.getElementById("dateFrom").value = "";
   document.getElementById("dateTo").value   = "";
   document.getElementById("datePicker").classList.remove("open");
+
+  // 2. Riabilita tutti i toggle (VPS, MT account, EA)
+  disabledVPS = {};
+  disabledMT  = {};
+  disabledEAs = {};
+  saveDisabled();
+
   updateLabel();
   renderAll();
 }
