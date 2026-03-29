@@ -207,6 +207,13 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 /* Ranking rows cliccabili */
 .ranking-table tr[onclick]:hover td{background:rgba(240,165,0,.06)!important;}
 .ranking-table tr[onclick]:hover .rank-name{color:var(--accent);}
+/* Colonne ordinabili */
+.sort-th{cursor:pointer;user-select:none;white-space:nowrap;}
+.sort-th:hover{color:var(--accent)!important;}
+.sort-arrow{display:inline-block;margin-left:4px;font-size:8px;opacity:.5;}
+.sort-th.sort-asc .sort-arrow::after{content:'▲';opacity:1;color:var(--accent);}
+.sort-th.sort-desc .sort-arrow::after{content:'▼';opacity:1;color:var(--accent);}
+.sort-th .sort-arrow::after{content:'⇅';}
 /* EA Detail Modal ─────────────────────────────── */
 .ea-modal-overlay{animation:fadeIn .18s ease;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -481,7 +488,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.1.6";
+const APP_VERSION="4.2.0";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -1039,14 +1046,71 @@ function renderMT(vps,acc){
   return `<div class="mt-block${mtOn?'':' row-off'}${staleClass}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span>${alertBadge}</div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'')}</div></div>`;
 }
 
-function renderEATable(eas,trades,vn,an,currency){
-  const total=calcAccStats(trades,vn,an);
-  const rows=eas.map(ea=>{
-    const on=isEnabled(vn,an,ea.magic);
-    const s=calcStats(trades,ea.magic,!on);
-    return`<tr class="${on?'':'disabled'}"><td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vn}',${an},${ea.magic},this)"></button></td><td style="cursor:pointer" onclick="openEAModal(${ea.magic},'${getEAName(ea.magic,ea.name).replace(/'/g,"\\'")}')"><div class="ea-name" style="color:var(--text2)">${getEAName(ea.magic,ea.name)}</div><div class="ea-magic-sub">Magic: ${ea.magic} &nbsp;·&nbsp; <span style="color:var(--accent);font-size:8px">▶ dettaglio</span></div></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(s.pf)}">${s.pf>=99?'∞':s.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(s.pl)}">${fmtPL(s.pl)}</span><div style="font-size:8px;color:var(--text3)">${currency}</div></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${s.trades}</td></tr>`;
-  }).join('');
-  return`<table class="ea-table"><thead><tr><th style="width:38px"></th><th>EA / Magic</th><th>Win Rate</th><th class="r">P.Factor</th><th class="r">P&L</th><th class="r">Trade</th></tr></thead><tbody>${rows}<tr class="total-row"><td></td><td><strong>Totale Account</strong></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${total.wr}%;background:${wrColor(total.wr)}"></div></div><span class="wr-val" style="color:${wrColor(total.wr)};font-size:12px">${total.wr.toFixed(1)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(total.pf)}">${total.pf>=99?'∞':total.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(total.pl)}" style="font-size:13px">${fmtPL(total.pl)}</span></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700"><strong>${total.trades}</strong></td></tr></tbody></table>`;
+function sortEATable(vn, an, col){
+  const key = vn+"_"+an;
+  const cur = EA_SORT[key] || {col:'pl', dir:'desc'};
+  EA_SORT[key] = {col, dir: (cur.col===col && cur.dir==='desc') ? 'asc' : 'desc'};
+  renderVPSList();
+}
+
+function renderEATable(eas, trades, vn, an, currency){
+  const total = calcAccStats(trades, vn, an);
+  const key   = vn+"_"+an;
+  const sort  = EA_SORT[key] || {col:'pl', dir:'desc'};
+
+  const eaData = eas.map(ea=>{
+    const on = isEnabled(vn, an, ea.magic);
+    const s  = calcStats(trades, ea.magic, !on);
+    return {ea, on, s};
+  });
+
+  eaData.sort((a, b)=>{
+    if(sort.col==='name'){
+      const av=getEAName(a.ea.magic,a.ea.name).toLowerCase();
+      const bv=getEAName(b.ea.magic,b.ea.name).toLowerCase();
+      return sort.dir==='asc'?av.localeCompare(bv):bv.localeCompare(av);
+    }
+    const vals = {wr:[a.s.wr,b.s.wr], pf:[a.s.pf,b.s.pf], pl:[a.s.pl,b.s.pl], trades:[a.s.trades,b.s.trades]};
+    const [av,bv] = vals[sort.col]||[0,0];
+    return sort.dir==='asc' ? av-bv : bv-av;
+  });
+
+  const rows = eaData.map(({ea,on,s})=>
+    `<tr class="${on?'':'disabled'}">
+      <td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vn}',${an},${ea.magic},this)"></button></td>
+      <td style="cursor:pointer" onclick="openEAModal(${ea.magic},'${getEAName(ea.magic,ea.name).replace(/'/g,"\'")}')">
+        <div class="ea-name" style="color:var(--text2)">${getEAName(ea.magic,ea.name)}</div>
+        <div class="ea-magic-sub">Magic: ${ea.magic} &nbsp;·&nbsp; <span style="color:var(--accent);font-size:8px">▶ dettaglio</span></div>
+      </td>
+      <td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span></div></td>
+      <td style="text-align:right"><span class="pf-pill ${pfCls(s.pf)}">${s.pf>=99?'∞':s.pf.toFixed(2)}</span></td>
+      <td style="text-align:right"><span class="pl-val ${plCls(s.pl)}">${fmtPL(s.pl)}</span><div style="font-size:8px;color:var(--text3)">${currency}</div></td>
+      <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${s.trades}</td>
+    </tr>`
+  ).join('');
+
+  const th = (col, label, align='') => {
+    const active = sort.col===col;
+    const arrow  = active ? (sort.dir==='asc'?'▲':'▼') : '⇅';
+    const cls    = `sort-th${active?' sort-'+sort.dir:''} ${align}`;
+    return `<th class="${cls}" onclick="sortEATable('${vn}',${an},'${col}')">${label} <span class="sort-arrow" style="font-size:8px;opacity:${active?1:.4};color:${active?'var(--accent)':'inherit'}">${arrow}</span></th>`;
+  };
+
+  return `<table class="ea-table"><thead><tr>
+    <th style="width:38px"></th>
+    ${th('name','EA / Magic')}
+    ${th('wr','Win Rate')}
+    ${th('pf','P.Factor','r')}
+    ${th('pl','P&L','r')}
+    ${th('trades','Trade','r')}
+  </tr></thead><tbody>${rows}
+  <tr class="total-row">
+    <td></td><td><strong>Totale Account</strong></td>
+    <td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${total.wr}%;background:${wrColor(total.wr)}"></div></div><span class="wr-val" style="color:${wrColor(total.wr)};font-size:12px">${total.wr.toFixed(1)}%</span></div></td>
+    <td style="text-align:right"><span class="pf-pill ${pfCls(total.pf)}">${total.pf>=99?'∞':total.pf.toFixed(2)}</span></td>
+    <td style="text-align:right"><span class="pl-val ${plCls(total.pl)}" style="font-size:13px">${fmtPL(total.pl)}</span></td>
+    <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700"><strong>${total.trades}</strong></td>
+  </tr></tbody></table>`;
 }
 
 function sparkSVG(trades,w=80,h=28){if(!trades||trades.length<2)return`<svg width="${w}" height="${h}"></svg>`;const s=[...trades].sort((a,b)=>a.t-b.t).slice(-30);let cum=0;const pts=s.map(t=>{cum+=t.p;return cum;});const mn=Math.min(...pts),mx=Math.max(...pts),range=mx-mn||1;const xs=pts.map((_,i)=>i*(w-2)/(pts.length-1)+1);const ys=pts.map(p=>h-2-((p-mn)/range)*(h-4));const d=xs.map((x,i)=>(i===0?'M':'L')+x.toFixed(1)+','+ys[i].toFixed(1)).join(' ');const col=pts[pts.length-1]>=0?'#00d97e':'#ff3d5e';return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path d="${d}" stroke="${col}" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>`;}
@@ -1054,6 +1118,8 @@ function sparkSVG(trades,w=80,h=28){if(!trades||trades.length<2)return`<svg widt
 //  EA DETAIL MODAL
 // ══════════════════════════════════════════════════════════════
 const EAM = { magic:null, name:'', trades:[], hours:'1d', customFrom:0, customTo:0, custom:false, mode:'both' };
+// Stato sort tabelle EA per account: key = "VPS_accNum"
+const EA_SORT = {}; // {key: {col:'pl', dir:'desc'}}
 const EACI = {}; // chart instances del modale
 
 function destroyEAChart(id){ if(EACI[id]){EACI[id].destroy();delete EACI[id];} }
