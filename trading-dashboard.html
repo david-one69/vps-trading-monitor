@@ -92,7 +92,7 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .vps-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;animation:fadeUp .38s cubic-bezier(.22,.68,0,1.15) both;transition:border-color .2s;}
 .vps-block:hover{border-color:var(--border2);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.vps-header{display:grid;grid-template-columns:20px 1fr repeat(4,110px) 46px;align-items:center;gap:8px;padding:14px 18px;background:var(--bg3);border-bottom:1px solid transparent;cursor:pointer;user-select:none;transition:background .15s;}
+.vps-header{display:grid;grid-template-columns:20px 1fr repeat(7,90px) 46px;align-items:center;gap:8px;padding:14px 18px;background:var(--bg3);border-bottom:1px solid transparent;cursor:pointer;user-select:none;transition:background .15s;}
 .vps-header:hover{background:var(--bg4);}
 .vps-header.open{border-bottom-color:var(--border);}
 .toggle-icon{color:var(--text3);font-size:7px;transition:transform .22s ease;}
@@ -107,7 +107,7 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .vps-content{display:none;padding:10px;gap:8px;flex-direction:column;}
 .vps-content.open{display:flex;}
 .mt-block{background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
-.mt-header{display:grid;grid-template-columns:20px 1fr repeat(4,90px) 46px;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid transparent;}
+.mt-header{display:grid;grid-template-columns:20px 1fr repeat(7,82px) 46px;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid transparent;}
 .mt-header:hover{background:var(--bg4);}
 .mt-header.open{border-bottom-color:var(--border);}
 .mt-name-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
@@ -202,8 +202,8 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 #alertBar{display:none;}
 footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-top:1px solid var(--border);margin-top:20px;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;}
 @media(max-width:1300px){.kpi-strip{grid-template-columns:repeat(3,1fr);}.chart-grid-2{grid-template-columns:1fr 1fr;}}
-@media(max-width:1000px){.vps-header{grid-template-columns:20px 1fr repeat(3,95px);}.mt-header{grid-template-columns:20px 1fr repeat(3,82px);}.chart-grid-2,.chart-grid-2b{grid-template-columns:1fr;}}
-@media(max-width:700px){header{height:auto;padding:10px 14px;}main{padding:12px;}.kpi-strip{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:20px 1fr repeat(2,80px);}.mt-header{grid-template-columns:20px 1fr repeat(2,72px);}}
+@media(max-width:1000px){.vps-header{grid-template-columns:20px 1fr repeat(4,88px);}.mt-header{grid-template-columns:20px 1fr repeat(4,78px);}.chart-grid-2,.chart-grid-2b{grid-template-columns:1fr;}}
+@media(max-width:700px){header{height:auto;padding:10px 14px;}main{padding:12px;}.kpi-strip{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:20px 1fr repeat(3,75px);}.mt-header{grid-template-columns:20px 1fr repeat(3,70px);}}
 /* Ranking rows cliccabili */
 .ranking-table tr[onclick]:hover td{background:rgba(240,165,0,.06)!important;}
 .ranking-table tr[onclick]:hover .rank-name{color:var(--accent);}
@@ -488,7 +488,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.2.0";
+const APP_VERSION="4.2.1";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -663,6 +663,23 @@ function calcAccStats(rawTrades,vn,an){
   return{wr:w/en.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl,trades:en.length};
 }
 // ── Aggregate per VPS (tutte le account abilitate) ───────────────────────────
+// Calcola DD massimo intraday (giorno corrente broker)
+function calcDailyDD(trades, balance){
+  if(!balance || !trades.length) return 0;
+  const bt = getBrokerTime();
+  const from = bt > 0 ? bt-(bt%86400) : (()=>{const n=new Date();n.setUTCHours(0,0,0,0);return Math.floor(n.getTime()/1000);})();
+  const today = trades.filter(t=>t.t>=from);
+  if(!today.length) return 0;
+  let cum=0, peak=0, dd=0;
+  today.sort((a,b)=>a.t-b.t).forEach(t=>{
+    cum+=t.p;
+    if(cum>peak) peak=cum;
+    const d=peak-cum;
+    if(d>dd) dd=d;
+  });
+  return balance>0 ? parseFloat((dd/balance*100).toFixed(2)) : 0;
+}
+
 function calcVPSStats(vps){
   if(!isVPSEnabled(vps.vps_name)) return{wr:0,pf:0,pl:0,trades:0};
   const trades=[];
@@ -975,7 +992,13 @@ function renderVPSList(){
     const vpsOn=isVPSEnabled(vps.vps_name);
     const b=document.createElement("div");
     b.className="vps-block"+(vpsOn?'':' row-off');b.style.animationDelay=(vi*.07)+"s";
-    const aggH=`<div class="mcell"><div class="mcell-label">Win Rate</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Operazioni</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accs.length}</div></div>`;
+    // Calcola balance/equity/DD aggregati per VPS
+    const vpsBalance = filterAccounts(vps).reduce((s,a)=>s+(a.balance||0),0);
+    const vpsEquity  = filterAccounts(vps).reduce((s,a)=>s+(a.equity||0),0);
+    const vpsAllTrades = [];
+    filterAccounts(vps).forEach(a=>(a.trades||[]).forEach(t=>{ if(isEAEnabled(vps.vps_name,a.account_number,t.m)) vpsAllTrades.push(t); }));
+    const vpsDDpct = calcDailyDD(vpsAllTrades, vpsBalance);
+    const aggH=`<div class="mcell"><div class="mcell-label">Win Rate</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Balance</div><div class="mcell-val neu">${vpsBalance>0?fmtPL(vpsBalance):'—'}</div></div><div class="mcell"><div class="mcell-label">Equity</div><div class="mcell-val ${vpsEquity>=vpsBalance?'pos':'neg'}">${vpsEquity>0?fmtPL(vpsEquity):'—'}</div></div><div class="mcell"><div class="mcell-label">DD% oggi</div><div class="mcell-val ${vpsDDpct>10?'neg':vpsDDpct>5?'acc':'pos'}">${vpsDDpct>0?vpsDDpct.toFixed(2)+'%':'—'}</div></div><div class="mcell"><div class="mcell-label">Operazioni</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accs.length}</div></div>`;
     b.innerHTML=`<div class="vps-header ${isOpen?'open':''}" onclick="toggleVPS('${vps.vps_name}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="vps-name-group"><span class="vps-badge">${vps.vps_name}</span><div><div class="vps-name">${vps.vps_name}</div><div class="vps-meta">${accs.length} account · ${accs.reduce((s,a)=>s+(a.eas||[]).length,0)} EA</div></div></div>${aggH}<button class="row-toggle ${vpsOn?'on':''}" title="${vpsOn?'Disabilita VPS':'Abilita VPS'}" onclick="toggleVPSEnabled('${vps.vps_name}',this,event)"></button></div><div class="vps-content ${isOpen?'open':''}" id="vc-${vps.vps_name}">${accs.length?accs.map(acc=>renderMT(vps,acc)).join(""):'<div class="state-box" style="padding:16px"><span>Nessun account per il filtro.</span></div>'}</div>`;
     c.appendChild(b);
   });
@@ -1043,7 +1066,7 @@ function renderMT(vps,acc){
     ?`<span class="alert-badge ${status.level==='stale'?'alert-stale':'alert-warn'}" title="${status.reason}">${status.label}</span>`
     :`<span class="alert-badge alert-ok">✓ Live</span>`;
   const staleClass=status.level==='stale'?' mt-stale':status.level==='warn'?' mt-warn':'';
-  return `<div class="mt-block${mtOn?'':' row-off'}${staleClass}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span>${alertBadge}</div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'')}</div></div>`;
+  return `<div class="mt-block${mtOn?'':' row-off'}${staleClass}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span>${alertBadge}</div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Balance</div><div class="mcell-val neu">${acc.balance>0?fmtPL(acc.balance):'—'}</div></div><div class="mcell"><div class="mcell-label">Equity</div><div class="mcell-val ${(acc.equity||0)>=(acc.balance||0)?'pos':'neg'}">${acc.equity>0?fmtPL(acc.equity):'—'}</div></div><div class="mcell"><div class="mcell-label">DD% oggi</div><div class="mcell-val ${calcDailyDD(acc.trades||[],acc.balance)>10?'neg':calcDailyDD(acc.trades||[],acc.balance)>5?'acc':'pos'}">${calcDailyDD(acc.trades||[],acc.balance)>0?calcDailyDD(acc.trades||[],acc.balance).toFixed(2)+'%':'—'}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'')}</div></div>`;
 }
 
 function sortEATable(vn, an, col){
