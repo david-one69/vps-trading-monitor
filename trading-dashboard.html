@@ -493,7 +493,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.2.4";
+const APP_VERSION="4.2.5";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -575,19 +575,20 @@ async function syncNamesFromServer(){
     const j = await r.json();
     const serverNames = (j.names && typeof j.names === "object") ? j.names : {};
 
-    // Unisci SEMPRE i dati del server con quelli locali (merge bidirezionale)
-    // Il server è la fonte autoritativa — i suoi valori sovrascrivono i locali
+    // LOCALE-WINS: il server aggiunge solo le chiavi che mancano in locale.
+    // I valori locali non vengono mai sovrascritti dal server.
+    // Questo evita che un reload cancelli i nomi appena salvati.
     let changed = false;
     Object.entries(serverNames).forEach(([k,v])=>{
       if(!v) return;
       if(String(k).startsWith("acc_")){
         const ak = String(k).slice(4);
-        if(accountAliases[ak] !== String(v)){
+        if(!accountAliases[ak]){          // aggiungi solo se manca in locale
           accountAliases[ak] = String(v);
           changed = true;
         }
       } else {
-        if(userNames[String(k)] !== String(v)){
+        if(!userNames[String(k)]){        // aggiungi solo se manca in locale
           userNames[String(k)] = String(v);
           changed = true;
         }
@@ -598,7 +599,7 @@ async function syncNamesFromServer(){
       localStorage.setItem("accountAliases", JSON.stringify(accountAliases));
     }
 
-    // Se abbiamo dati locali che il server non ha, rispediamoli
+    // Se il locale ha più dati del server (es. server riavviato), rispedisci tutto
     const localTotal = Object.keys(userNames).length + Object.keys(accountAliases).length;
     const serverTotal = Object.keys(serverNames).length;
     if(localTotal > serverTotal){
