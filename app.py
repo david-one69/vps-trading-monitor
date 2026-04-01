@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import json, os, threading
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins='*', allow_headers=['Content-Type', 'X-API-Key'])
 
 API_KEY    = os.environ.get("API_KEY", "tradingvps")
 data_store = {}
