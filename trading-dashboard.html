@@ -493,7 +493,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.2.7";
+const APP_VERSION="4.2.8";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -602,10 +602,16 @@ async function syncNamesFromServer(){
       localStorage.setItem("accountAliases", JSON.stringify(accountAliases));
     }
 
-    // Se il locale ha più dati del server (es. server riavviato), rispedisci tutto
-    const localTotal = Object.keys(userNames).length + Object.keys(accountAliases).length;
-    const serverTotal = Object.keys(serverNames).length;
-    if(localTotal > serverTotal){
+    // Rispedisci al server SOLO se ci sono chiavi locali che il server non ha
+    // (es. server riavviato e ha perso dati)
+    // NON rispedire se il server era già aggiornato — evita sovrascrittura accidentale
+    const localKeys = new Set([
+      ...Object.keys(userNames),
+      ...Object.keys(accountAliases).map(k=>"acc_"+k)
+    ]);
+    const serverKeys = new Set(Object.keys(serverNames));
+    const hasLocalOnly = [...localKeys].some(k=>!serverKeys.has(k));
+    if(hasLocalOnly){
       await syncNamesToServer();
     }
   }catch(e){ /* server in sleep o offline — localStorage è il backup */ }
