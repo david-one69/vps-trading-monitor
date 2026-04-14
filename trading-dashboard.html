@@ -324,6 +324,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
       </div>
     </div>
     <span class="status-tag" id="statusTag">Caricamento...</span>
+    <button class="header-btn" onclick="resetFilters()" title="Ripristina tutti i filtri e toggle">↺ Reset filtri</button>
     <button class="header-btn" onclick="manualRefresh()">↻ Aggiorna</button>
     <button class="header-btn" onclick="openSettings()">⚙ Nomi EA</button>
   </div>
@@ -1350,6 +1351,40 @@ function updateLabel(){
     :(p[currentHours]||'Periodo');
   document.getElementById("filterLabel").textContent=`${period} · ${m[currentMode]}${t[currentTerminal]}`;
 }
+function resetFilters(){
+  // Ripristina filtri: Tutti + MT4+5 + TOT
+  currentMode     = "both";
+  currentTerminal = "both";
+  currentHours    = 0;
+  usingCustom     = false;
+  // Reset pill mode → Tutti
+  document.querySelectorAll("#modeGroup .pill-btn").forEach(b=>{
+    b.className = "pill-btn" + (b.dataset.mode==="both" ? " active-both" : "");
+  });
+  // Reset pill terminal → MT4+5
+  document.querySelectorAll("#termGroup .pill-btn").forEach(b=>{
+    b.className = "pill-btn" + (b.dataset.term==="both" ? " active-term" : "");
+  });
+  // Reset pill periodo → TOT
+  document.querySelectorAll("#timeGroup .pill-btn").forEach(b=>{
+    b.className = "pill-btn" + (b.dataset.hours==="0" ? " active-time" : "");
+  });
+  // Reset custom button
+  const cb = document.getElementById("customBtn");
+  cb.className = "pill-btn";
+  cb.textContent = "⊞ Custom";
+  document.getElementById("dateFrom").value = "";
+  document.getElementById("dateTo").value   = "";
+  document.getElementById("datePicker").classList.remove("open");
+  // Riabilita tutti i toggle (VPS, MT account, EA)
+  disabledVPS = {};
+  disabledMT  = {};
+  disabledEAs = {};
+  saveDisabled();
+  updateLabel();
+  renderAll();
+}
+
 function renderAll(){renderKPI();renderAlerts();renderCharts();renderRanking();renderVPSList();}
 // ── Version display ──
 document.getElementById('verHeader').textContent='v'+APP_VERSION;
