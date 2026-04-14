@@ -136,10 +136,10 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .row-toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--text3);transition:transform .2s,background .2s;}
 .row-toggle.on{background:rgba(0,217,126,.3);border:1px solid rgba(0,217,126,.5);}
 .row-toggle.on::after{transform:translateX(12px);background:var(--green);}
-.vps-block.row-off>.vps-header{opacity:.45;}
-.vps-block.row-off>.vps-content{opacity:.35;pointer-events:none;}
-.mt-block.row-off>.mt-header{opacity:.45;}
-.mt-block.row-off>.ea-container{opacity:.35;}/* pointer-events abilitati: toggle EA cliccabili anche con account disabilitato */
+.vps-block.row-off>.vps-header{opacity:.55;}
+.vps-block.row-off>.vps-content{opacity:.45;pointer-events:none;}
+.mt-block.row-off>.mt-header{opacity:.55;}
+.mt-block.row-off>.ea-container{opacity:.55;}/* pointer-events abilitati: toggle EA cliccabili anche con account disabilitato */
 .wr-wrap{display:flex;align-items:center;gap:6px;min-width:90px;}
 .wr-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
 .wr-fill{height:100%;border-radius:2px;transition:width .4s;}
@@ -477,7 +477,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.3.3";
+const APP_VERSION="4.3.4";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -652,11 +652,10 @@ function inRange(t){
 function getAllTrades(){
   const a=[];
   rawData.forEach(vps=>{
-    if(!isVPSEnabled(vps.vps_name)) return;          // salta intera VPS
+    if(!isVPSEnabled(vps.vps_name)) return;
     filterAccounts(vps).forEach(acc=>{
-      if(!isMTEnabled(vps.vps_name,acc.account_number)) return;  // salta MT
       (acc.trades||[]).forEach(t=>{
-        if(!isEAEnabled(vps.vps_name,acc.account_number,t.m)) return; // salta EA
+        if(!isEnabled(vps.vps_name,acc.account_number,t.m)) return;
         if(inRange(t.t)) a.push(t);
       });
     });
@@ -674,7 +673,7 @@ function calcStats(trades,magic,disabled){
 }
 // ── calcAccStats: filtraggio ESPLICITO a 3 livelli per un account ─────────────
 function calcAccStats(rawTrades,vn,an){
-  if(!isVPSEnabled(vn)||!isMTEnabled(vn,an)) return{wr:0,pf:0,pl:0,trades:0};
+  if(!isVPSEnabled(vn)) return{wr:0,pf:0,pl:0,trades:0};
   const en=rawTrades.filter(t=>isEAEnabled(vn,an,t.m)&&inRange(t.t));
   if(!en.length) return{wr:0,pf:0,pl:0,trades:0};
   let w=0,pl=0,gp=0,gl=0;
@@ -686,8 +685,7 @@ function calcVPSStats(vps){
   if(!isVPSEnabled(vps.vps_name)) return{wr:0,pf:0,pl:0,trades:0};
   const trades=[];
   filterAccounts(vps).forEach(acc=>{
-    if(!isMTEnabled(vps.vps_name,acc.account_number)) return;
-    (acc.trades||[]).forEach(t=>{if(isEAEnabled(vps.vps_name,acc.account_number,t.m)&&inRange(t.t))trades.push(t);});
+    (acc.trades||[]).forEach(t=>{if(isEnabled(vps.vps_name,acc.account_number,t.m)&&inRange(t.t))trades.push(t);});
   });
   if(!trades.length) return{wr:0,pf:0,pl:0,trades:0};
   let w=0,pl=0,gp=0,gl=0;
@@ -758,10 +756,9 @@ function eaRanking(){
   rawData.forEach(vps=>{
     if(!isVPSEnabled(vps.vps_name)) return;
     filterAccounts(vps).forEach(acc=>{
-      if(!isMTEnabled(vps.vps_name,acc.account_number)) return;
       const accBal = acc.balance||0;
       (acc.trades||[]).forEach(t=>{
-        if(!isEAEnabled(vps.vps_name,acc.account_number,t.m)) return;
+        if(!isEnabled(vps.vps_name,acc.account_number,t.m)) return;
         if(!inRange(t.t)) return;
         if(!bm[t.m]) bm[t.m]={magic:t.m,name:'',trades:[],balances:[]};
         bm[t.m].trades.push(t);
