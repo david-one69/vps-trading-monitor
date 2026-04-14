@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>VPS Trading Monitor</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-:root{--bg:#060810;--bg2:#0b0e1e;--bg3:#10132a;--bg4:#161934;--border:#1d2140;--border2:#272d52;--text:#f0f4ff;--text2:#a8b4d8;--text3:#7a85b0;--accent:#f0a500;--accent2:#ffc740;--green:#00d97e;--red:#ff3d5e;--blue:#4d84ff;--purple:#9d7fff;--live:#00d97e;--demo:#9d7fff;--radius:10px;--shadow:0 8px 32px rgba(0,0,0,.6);}
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;font-variant-numeric:normal;}
+:root{--bg:#060810;--bg2:#0b0e1e;--bg3:#10132a;--bg4:#161934;--border:#1d2140;--border2:#272d52;--text:#e8edf8;--text2:#8e98c8;--text3:#555e8a;--accent:#f0a500;--accent2:#ffc740;--green:#00d97e;--red:#ff3d5e;--blue:#4d84ff;--purple:#9d7fff;--live:#00d97e;--demo:#9d7fff;--radius:10px;--shadow:0 8px 32px rgba(0,0,0,.6);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden;}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.028;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:160px;}
@@ -17,11 +17,11 @@ body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(
 header{background:rgba(8,10,22,.97);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:200;backdrop-filter:blur(20px);flex-wrap:wrap;gap:6px;}
 header::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.5;}
 .logo{display:flex;align-items:center;gap:12px;}
-.logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#c07000);display:flex;align-items:center;justify-content:center;font-family:Verdana, sans-serif,monospace;font-size:10px;font-weight:700;color:#000;box-shadow:0 0 20px rgba(240,165,0,.35);}
-.logo-text{font-family:Verdana, sans-serif,monospace;font-size:11px;font-weight:700;letter-spacing:.1em;}
+.logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#c07000);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#000;box-shadow:0 0 20px rgba(240,165,0,.35);}
+.logo-text{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.1em;}
 .logo-sub{font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-top:2px;}
 .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.live-badge{display:flex;align-items:center;gap:5px;font-family:Verdana, sans-serif,monospace;font-size:10px;color:var(--text3);}
+.live-badge{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);}
 .live-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2.2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,217,126,.45);}50%{box-shadow:0 0 0 5px rgba(0,217,126,0);}}
 .pill-group{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:2px;gap:2px;}
@@ -30,14 +30,14 @@ header::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
 .pill-btn.active-both{background:rgba(240,165,0,.14);color:var(--accent);border:1px solid rgba(240,165,0,.28);}
 .pill-btn.active-live{background:rgba(0,217,126,.12);color:var(--live);border:1px solid rgba(0,217,126,.28);}
 .pill-btn.active-demo{background:rgba(157,127,255,.12);color:var(--demo);border:1px solid rgba(157,127,255,.28);}
-.pill-btn.active-time{background:var(--bg4);color:var(--accent);border:1px solid var(--border2);font-family:Verdana, sans-serif,monospace;}
-.pill-btn.active-term{background:rgba(77,132,255,.14);color:var(--blue);border:1px solid rgba(77,132,255,.28);font-family:Verdana, sans-serif,monospace;}
-.status-tag{font-family:Verdana, sans-serif,monospace;font-size:9px;color:var(--text3);}
+.pill-btn.active-time{background:var(--bg4);color:var(--accent);border:1px solid var(--border2);font-family:'JetBrains Mono',monospace;}
+.pill-btn.active-term{background:rgba(77,132,255,.14);color:var(--blue);border:1px solid rgba(77,132,255,.28);font-family:'JetBrains Mono',monospace;}
+.status-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);}
 .header-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-size:11px;font-weight:600;padding:5px 13px;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif;position:relative;}
 .header-btn:hover{background:rgba(240,165,0,.1);color:var(--accent);border-color:rgba(240,165,0,.35);}
 main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .sec-header{display:flex;align-items:center;justify-content:space-between;margin:28px 0 14px;}
-.sec-title{display:flex;align-items:center;gap:10px;font-family:Verdana, sans-serif,monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);font-weight:600;}
+.sec-title{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);font-weight:600;}
 .sec-title::before{content:'';display:inline-block;width:20px;height:1.5px;background:var(--accent);border-radius:1px;opacity:.7;}
 .kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:8px;}
 .kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;animation:fadeUp .4s cubic-bezier(.22,.68,0,1.1) both;}
@@ -48,7 +48,7 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .kpi-card.c-red::before{background:linear-gradient(90deg,var(--red),transparent);}
 .kpi-card.c-blue::before{background:linear-gradient(90deg,var(--blue),transparent);}
 .kpi-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);margin-bottom:8px;font-weight:700;}
-.kpi-val{font-family:Verdana, sans-serif,monospace;font-size:24px;font-weight:700;line-height:1;margin-bottom:5px;}
+.kpi-val{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;line-height:1;margin-bottom:5px;}
 .kpi-sub{font-size:10px;color:var(--text3);}
 .kpi-icon{position:absolute;top:14px;right:14px;font-size:18px;opacity:.12;}
 .chart-grid-2{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px;}
@@ -57,17 +57,17 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;animation:fadeUp .42s cubic-bezier(.22,.68,0,1.1) both;}
 .chart-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(240,165,0,.15),transparent);}
 .chart-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;}
-.chart-title{font-family:Verdana, sans-serif,monospace;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);}
+.chart-title{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);}
 .chart-subtitle{font-size:10px;color:var(--text3);font-weight:400;margin-top:2px;}
-.chart-kpi{font-family:Verdana, sans-serif,monospace;font-size:12px;font-weight:700;}
+.chart-kpi{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;}
 .chart-wrap{position:relative;}
 .donut-center-wrap{position:relative;}
 .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
-.donut-big{font-family:Verdana, sans-serif,monospace;font-size:28px;font-weight:700;line-height:1;}
+.donut-big{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;line-height:1;}
 .donut-sub{font-size:11px;color:var(--text3);margin-top:4px;}
 .donut-stats{display:flex;gap:16px;margin-top:14px;justify-content:center;}
 .donut-stat{text-align:center;}
-.donut-stat-val{font-family:Verdana, sans-serif,monospace;font-size:14px;font-weight:700;}
+.donut-stat-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;}
 .donut-stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:2px;}
 .ranking-wrap{overflow-x:auto;}
 .ranking-table{width:100%;border-collapse:collapse;}
@@ -76,45 +76,45 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .ranking-table td{padding:10px 13px;font-size:12px;border-bottom:1px solid rgba(29,33,64,.5);vertical-align:middle;}
 .ranking-table tr:last-child td{border-bottom:none;}
 .ranking-table tr:hover td{background:rgba(22,25,52,.5);}
-.rank-num{font-family:Verdana, sans-serif,monospace;font-size:11px;color:var(--text3);font-weight:700;}
+.rank-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);font-weight:700;}
 .rank-name{font-weight:600;font-size:13px;}
-.rank-magic{font-family:Verdana, sans-serif,monospace;font-size:9px;color:var(--text3);margin-top:2px;font-feature-settings:'zero' 0;}
+.rank-magic{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px;}
 .rank-wr-wrap{display:flex;align-items:center;gap:6px;min-width:90px;}
 .rank-wr-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
 .rank-wr-fill{height:100%;border-radius:2px;}
-.td-r{text-align:right;font-family:Verdana, sans-serif,monospace;font-weight:700;}
-.pf-pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-family:Verdana, sans-serif,monospace;font-size:10px;font-weight:700;}
+.td-r{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;}
+.pf-pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;}
 .pf-h{background:rgba(0,217,126,.1);color:var(--green);border:1px solid rgba(0,217,126,.22);}
 .pf-m{background:rgba(240,165,0,.1);color:var(--accent);border:1px solid rgba(240,165,0,.22);}
 .pf-l{background:rgba(255,61,94,.1);color:var(--red);border:1px solid rgba(255,61,94,.22);}
-.pl-val{font-family:Verdana, sans-serif,monospace;font-size:13px;font-weight:700;}
-.dd-val{font-family:Verdana, sans-serif,monospace;font-size:11px;color:var(--red);}
+.pl-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
+.dd-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--red);}
 .vps-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;animation:fadeUp .38s cubic-bezier(.22,.68,0,1.15) both;transition:border-color .2s;}
 .vps-block:hover{border-color:var(--border2);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.vps-header{display:grid;grid-template-columns:20px 1fr repeat(7,90px) 46px;align-items:center;gap:8px;padding:14px 18px;background:var(--bg3);border-bottom:1px solid transparent;cursor:pointer;user-select:none;transition:background .15s;}
+.vps-header{display:grid;grid-template-columns:20px 1fr repeat(4,110px) 46px;align-items:center;gap:8px;padding:14px 18px;background:var(--bg3);border-bottom:1px solid transparent;cursor:pointer;user-select:none;transition:background .15s;}
 .vps-header:hover{background:var(--bg4);}
 .vps-header.open{border-bottom-color:var(--border);}
 .toggle-icon{color:var(--text3);font-size:7px;transition:transform .22s ease;}
 .toggle-icon.open{transform:rotate(90deg);color:var(--accent);}
 .vps-name-group{display:flex;align-items:center;gap:8px;}
-.vps-badge{background:rgba(240,165,0,.1);border:1px solid rgba(240,165,0,.2);border-radius:5px;padding:2px 8px;font-family:Verdana, sans-serif,monospace;font-size:10px;font-weight:700;color:var(--accent);}
+.vps-badge{background:rgba(240,165,0,.1);border:1px solid rgba(240,165,0,.2);border-radius:5px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);}
 .vps-name{font-size:13px;font-weight:600;}
 .vps-meta{font-size:10px;color:var(--text3);margin-top:1px;}
 .mcell{text-align:right;}
 .mcell-label{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:2px;font-weight:600;}
-.mcell-val{font-family:Verdana, sans-serif,monospace;font-size:12px;font-weight:700;}
+.mcell-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;}
 .vps-content{display:none;padding:10px;gap:8px;flex-direction:column;}
 .vps-content.open{display:flex;}
 .mt-block{background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
-.mt-header{display:grid;grid-template-columns:20px 1fr repeat(7,82px) 46px;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid transparent;}
+.mt-header{display:grid;grid-template-columns:20px 1fr repeat(4,90px) 46px;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid transparent;}
 .mt-header:hover{background:var(--bg4);}
 .mt-header.open{border-bottom-color:var(--border);}
 .mt-name-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
-.mt-mode{border-radius:4px;padding:1px 7px;font-family:Verdana, sans-serif,monospace;font-size:9px;font-weight:700;}
+.mt-mode{border-radius:4px;padding:1px 7px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;}
 .mt-mode.live{background:rgba(0,217,126,.1);border:1px solid rgba(0,217,126,.25);color:var(--live);}
 .mt-mode.demo{background:rgba(157,127,255,.1);border:1px solid rgba(157,127,255,.25);color:var(--demo);}
-.mt-type{font-size:9px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-weight:600;font-family:Verdana, sans-serif,monospace;}
+.mt-type{font-size:9px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-weight:600;font-family:'JetBrains Mono',monospace;}
 .mt-name{font-size:12px;font-weight:500;}
 .mt-broker{font-size:10px;color:var(--text3);}
 .ea-container{display:none;overflow-x:auto;}
@@ -127,7 +127,7 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .ea-table tr:hover td{background:rgba(22,25,52,.4);}
 .ea-table tr.disabled td{opacity:.28;}
 .ea-name{font-weight:500;font-size:12px;}
-.ea-magic-sub{font-family:Verdana, sans-serif,monospace;font-size:8px;color:var(--text3);margin-top:1px;font-feature-settings:'zero' 0;}
+.ea-magic-sub{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);margin-top:1px;}
 .ea-toggle{width:28px;height:16px;border-radius:8px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;background:var(--border2);}
 .ea-toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--text3);transition:transform .2s,background .2s;}
 .ea-toggle.on{background:rgba(0,217,126,.3);border:1px solid rgba(0,217,126,.5);}
@@ -143,7 +143,7 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .wr-wrap{display:flex;align-items:center;gap:6px;min-width:90px;}
 .wr-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
 .wr-fill{height:100%;border-radius:2px;transition:width .4s;}
-.wr-val{font-family:Verdana, sans-serif,monospace;font-size:10px;font-weight:700;width:32px;text-align:right;}
+.wr-val{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;width:32px;text-align:right;}
 .total-row td{background:rgba(240,165,0,.03);border-top:1px solid rgba(240,165,0,.1);font-weight:600;}
 .pos{color:var(--green);}.neg{color:var(--red);}.neu{color:var(--text);}.acc{color:var(--accent);}.gld{color:var(--accent);}
 .state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 20px;gap:12px;color:var(--text3);font-size:13px;text-align:center;}
@@ -161,9 +161,9 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .sp-search{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-size:12px;padding:9px 14px;outline:none;margin-bottom:18px;font-family:'Outfit',sans-serif;transition:border-color .15s;}
 .sp-search:focus{border-color:var(--accent);}
 .sp-group{margin-bottom:22px;}
-.sp-group-title{font-family:Verdana, sans-serif,monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.sp-group-title{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 .sp-row{display:grid;grid-template-columns:90px 1fr 32px;align-items:center;gap:8px;padding:5px 0;}
-.sp-magic{font-family:Verdana, sans-serif,monospace;font-size:10px;color:var(--text3);font-feature-settings:'zero' 0;}
+.sp-magic{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);}
 .sp-input{background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;padding:5px 10px;outline:none;width:100%;transition:border-color .2s;font-family:'Outfit',sans-serif;}
 .sp-input:focus{border-color:var(--accent);}
 .sp-input.modified{border-color:rgba(240,165,0,.4);background:rgba(240,165,0,.04);}
@@ -175,17 +175,12 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .btn-reset-all{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline;}
 .btn-io{background:var(--bg4);border:1px solid var(--border2);color:var(--text2);font-size:11px;border-radius:5px;padding:4px 10px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;}
 .btn-io:hover{color:var(--accent);border-color:rgba(240,165,0,.35);}
-.save-ok{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;font-family:Verdana, sans-serif,monospace;}
-/* Account alias */
-.acc-alias{font-size:9px;color:var(--accent);font-style:italic;margin-top:2px;cursor:pointer;display:inline-block;border-bottom:1px dashed transparent;transition:border-color .2s;}
-.acc-alias:hover{border-bottom-color:var(--accent);}
-.acc-alias-empty{font-size:9px;color:var(--text3);font-style:italic;margin-top:2px;cursor:pointer;opacity:.5;}
-.acc-alias-empty:hover{opacity:1;color:var(--accent);}
+.save-ok{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;font-family:'JetBrains Mono',monospace;}
 /* Alert badges */
 .alert-badge{
   display:inline-flex;align-items:center;gap:4px;
   padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;
-  font-family:Verdana, sans-serif,monospace;letter-spacing:.04em;
+  font-family:'JetBrains Mono',monospace;letter-spacing:.04em;
   white-space:nowrap;
 }
 .alert-stale { background:rgba(255,61,94,.12); color:var(--red);    border:1px solid rgba(255,61,94,.3); }
@@ -201,24 +196,17 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
   border-radius:var(--radius);padding:10px 16px;margin-bottom:14px;
   align-items:center;
 }
-.alert-bar-title{font-family:Verdana, sans-serif,monospace;font-size:9px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-right:4px;}
+.alert-bar-title{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-right:4px;}
 .alert-item{font-size:10px;color:var(--text2);}
 .alert-item strong{color:var(--text);}
 #alertBar{display:none;}
-footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-top:1px solid var(--border);margin-top:20px;letter-spacing:.06em;font-family:Verdana, sans-serif,monospace;}
+footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-top:1px solid var(--border);margin-top:20px;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;}
 @media(max-width:1300px){.kpi-strip{grid-template-columns:repeat(3,1fr);}.chart-grid-2{grid-template-columns:1fr 1fr;}}
-@media(max-width:1000px){.vps-header{grid-template-columns:20px 1fr repeat(4,88px);}.mt-header{grid-template-columns:20px 1fr repeat(4,78px);}.chart-grid-2,.chart-grid-2b{grid-template-columns:1fr;}}
-@media(max-width:700px){header{height:auto;padding:10px 14px;}main{padding:12px;}.kpi-strip{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:20px 1fr repeat(3,75px);}.mt-header{grid-template-columns:20px 1fr repeat(3,70px);}}
+@media(max-width:1000px){.vps-header{grid-template-columns:20px 1fr repeat(3,95px);}.mt-header{grid-template-columns:20px 1fr repeat(3,82px);}.chart-grid-2,.chart-grid-2b{grid-template-columns:1fr;}}
+@media(max-width:700px){header{height:auto;padding:10px 14px;}main{padding:12px;}.kpi-strip{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:20px 1fr repeat(2,80px);}.mt-header{grid-template-columns:20px 1fr repeat(2,72px);}}
 /* Ranking rows cliccabili */
 .ranking-table tr[onclick]:hover td{background:rgba(240,165,0,.06)!important;}
 .ranking-table tr[onclick]:hover .rank-name{color:var(--accent);}
-/* Colonne ordinabili */
-.sort-th{cursor:pointer;user-select:none;white-space:nowrap;}
-.sort-th:hover{color:var(--accent)!important;}
-.sort-arrow{display:inline-block;margin-left:4px;font-size:8px;opacity:.5;}
-.sort-th.sort-asc .sort-arrow::after{content:'▲';opacity:1;color:var(--accent);}
-.sort-th.sort-desc .sort-arrow::after{content:'▼';opacity:1;color:var(--accent);}
-.sort-th .sort-arrow::after{content:'⇅';}
 /* EA Detail Modal ─────────────────────────────── */
 .ea-modal-overlay{animation:fadeIn .18s ease;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -240,14 +228,14 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
   display:flex;align-items:flex-start;justify-content:space-between;
 }
 .ea-modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;}
-.ea-modal-sub{font-family:Verdana, sans-serif,monospace;font-size:10px;color:var(--text3);}
+.ea-modal-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);}
 .ea-modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px;transition:color .15s;line-height:1;}
 .ea-modal-close:hover{color:var(--text);}
 .ea-modal-period{
   display:flex;align-items:center;gap:8px;padding:10px 24px;
   border-bottom:1px solid var(--border);background:var(--bg3);flex-wrap:wrap;
 }
-.ea-modal-period span{font-size:10px;color:var(--text3);font-family:Verdana, sans-serif,monospace;}
+.ea-modal-period span{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
 .ea-modal-body{padding:20px 24px;}
 .ea-kpi-row{
   display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;
@@ -257,11 +245,11 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
   padding:12px 14px;
 }
 .ea-kpi-label{font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:6px;font-weight:700;}
-.ea-kpi-val{font-family:Verdana, sans-serif,monospace;font-size:20px;font-weight:700;line-height:1;}
+.ea-kpi-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;line-height:1;}
 .ea-kpi-sub{font-size:9px;color:var(--text3);margin-top:3px;}
 .ea-charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
 .ea-chart-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;}
-.ea-chart-title{font-family:Verdana, sans-serif,monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:10px;}
+.ea-chart-title{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:10px;}
 @media(max-width:700px){
   .ea-kpi-row{grid-template-columns:repeat(3,1fr);}
   .ea-charts-row{grid-template-columns:1fr;}
@@ -276,13 +264,13 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
   animation:fadeUp .18s ease both;
 }
 .date-popover.open{display:block;}
-.date-popover-title{font-family:Verdana, sans-serif,monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);margin-bottom:12px;font-weight:700;}
+.date-popover-title{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);margin-bottom:12px;font-weight:700;}
 .date-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .date-field label{display:block;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;font-weight:600;}
 .date-field input[type=date]{
   width:100%;background:var(--bg4);border:1px solid var(--border2);
   border-radius:6px;color:var(--text);font-size:11px;padding:6px 9px;
-  outline:none;font-family:Verdana, sans-serif,monospace;
+  outline:none;font-family:'JetBrains Mono',monospace;
   color-scheme:dark;cursor:pointer;
   transition:border-color .15s;
 }
@@ -294,9 +282,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
   transition:background .15s;
 }
 .date-apply:hover{background:var(--accent2);}
-.pill-btn.active-custom{background:rgba(240,165,0,.14);color:var(--accent);border:1px solid rgba(240,165,0,.28);font-family:Verdana, sans-serif,monospace;}
-
-/* Disabilita zero barrato (slashed zero) in Verdana, sans-serif */
+.pill-btn.active-custom{background:rgba(240,165,0,.14);color:var(--accent);border:1px solid rgba(240,165,0,.28);font-family:'JetBrains Mono',monospace;}
 
 </style>
 </head>
@@ -321,6 +307,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
     </div>
     <div class="pill-group" id="timeGroup">
       <button class="pill-btn active-time" data-hours="1d" onclick="setPeriod(this)">1G</button>
+      <button class="pill-btn" data-hours="ieri" onclick="setPeriod(this)">Ieri</button>
       <button class="pill-btn" data-hours="168" onclick="setPeriod(this)">7G</button>
       <button class="pill-btn" data-hours="720" onclick="setPeriod(this)">30G</button>
       <button class="pill-btn" data-hours="0" onclick="setPeriod(this)">TOT</button>
@@ -337,7 +324,6 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
       </div>
     </div>
     <span class="status-tag" id="statusTag">Caricamento...</span>
-    <button class="header-btn" onclick="resetFilters()" title="Ripristina filtri predefiniti: Live · MT4+5 · 1G">↺ Reset filtri</button>
     <button class="header-btn" onclick="manualRefresh()">↻ Aggiorna</button>
     <button class="header-btn" onclick="openSettings()">⚙ Nomi EA</button>
   </div>
@@ -353,7 +339,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
   </div>
   <div class="sec-header">
     <span class="sec-title">Analisi Performance</span>
-    <span style="font-size:10px;color:var(--text3);font-family:Verdana, sans-serif,monospace" id="filterLabel"></span>
+    <span style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace" id="filterLabel"></span>
   </div>
   <div class="chart-card chart-full">
     <div class="chart-head">
@@ -433,16 +419,11 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
       </div>
       <div style="display:flex;gap:6px;margin-left:4px;">
         <div class="date-field"><label style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:3px">Dal</label>
-          <input type="date" id="eaDateFrom" style="background:var(--bg4);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:10px;padding:4px 7px;outline:none;font-family:Verdana, sans-serif,monospace;color-scheme:dark;width:120px" onchange="applyEACustomRange()"/>
+          <input type="date" id="eaDateFrom" style="background:var(--bg4);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:10px;padding:4px 7px;outline:none;font-family:'JetBrains Mono',monospace;color-scheme:dark;width:120px" onchange="applyEACustomRange()"/>
         </div>
         <div class="date-field"><label style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:3px">Al</label>
-          <input type="date" id="eaDateTo" style="background:var(--bg4);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:10px;padding:4px 7px;outline:none;font-family:Verdana, sans-serif,monospace;color-scheme:dark;width:120px" onchange="applyEACustomRange()"/>
+          <input type="date" id="eaDateTo" style="background:var(--bg4);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:10px;padding:4px 7px;outline:none;font-family:'JetBrains Mono',monospace;color-scheme:dark;width:120px" onchange="applyEACustomRange()"/>
         </div>
-      </div>
-      <div class="pill-group" id="eaModeGroup" style="margin-left:auto">
-        <button class="pill-btn active-both" data-em="both" onclick="setEAMode(this)">Tutti</button>
-        <button class="pill-btn" data-em="live" onclick="setEAMode(this)">Live</button>
-        <button class="pill-btn" data-em="demo" onclick="setEAMode(this)">Demo</button>
       </div>
     </div>
     <div class="ea-modal-body">
@@ -461,7 +442,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
           <div style="position:relative;height:130px">
             <canvas id="eaModalDonut"></canvas>
             <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
-              <div id="eaModalWR" style="font-family:Verdana, sans-serif,monospace;font-size:22px;font-weight:700"></div>
+              <div id="eaModalWR" style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700"></div>
               <div style="font-size:10px;color:var(--text3)">Win Rate</div>
             </div>
           </div>
@@ -495,61 +476,23 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.3.2";
+const APP_VERSION="4.3.3";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
-// Imposta font-feature-settings per disabilitare slashed zero
-document.documentElement.style.setProperty('--font-mono', "Verdana, sans-serif, monospace");
 Chart.defaults.color='rgba(102,110,156,0.9)';
 Chart.defaults.borderColor='rgba(29,33,64,0.8)';
-Chart.defaults.font.family="Verdana, sans-serif,monospace";
+Chart.defaults.font.family="'JetBrains Mono',monospace";
 Chart.defaults.font.size=10;
 const CI={};
 function dc(id){if(CI[id]){CI[id].destroy();delete CI[id];}}
 function cc(v){return v>=0?'rgba(0,217,126,0.75)':'rgba(255,61,94,0.75)';}
 function cb(v){return v>=0?'#00d97e':'#ff3d5e';}
-const TT={backgroundColor:'rgba(8,10,22,0.97)',borderColor:'rgba(29,33,64,0.8)',borderWidth:1,titleColor:'#d4d9f0',bodyColor:'rgba(102,110,156,0.9)',padding:10,displayColors:true,titleFont:{family:"Verdana, sans-serif,monospace",size:10},bodyFont:{family:"Verdana, sans-serif,monospace",size:10}};
+const TT={backgroundColor:'rgba(8,10,22,0.97)',borderColor:'rgba(29,33,64,0.8)',borderWidth:1,titleColor:'#d4d9f0',bodyColor:'rgba(102,110,156,0.9)',padding:10,displayColors:true,titleFont:{family:"'JetBrains Mono',monospace",size:10},bodyFont:{family:"'JetBrains Mono',monospace",size:10}};
 let currentHours="1d",currentMode="live",currentTerminal="both",expandedVps={},expandedMt={},allExpanded=false;
 // ── Storage a 3 livelli ──────────────────────────────────────────────────────
 let disabledEAs  = JSON.parse(localStorage.getItem("disabledEAs") ||"{}");
 let disabledMT   = JSON.parse(localStorage.getItem("disabledMT")  ||"{}"); // key: "VPS_accNum"
 let disabledVPS  = JSON.parse(localStorage.getItem("disabledVPS") ||"{}"); // key: "VPS_name"
-// ── Account Aliases ──────────────────────────────────────────
-let accountAliases = JSON.parse(localStorage.getItem("accountAliases") || "{}");
-function saveAliases(){ localStorage.setItem("accountAliases", JSON.stringify(accountAliases)); }
-function getAlias(vn, an){ return accountAliases[vn+"_"+an] || ""; }
-function setAlias(vn, an, val){
-  const k = vn+"_"+an;
-  if(val.trim()) accountAliases[k] = val.trim();
-  else delete accountAliases[k];
-  saveAliases();
-  // Sincronizza alias sul server insieme ai nomi EA
-  syncNamesToServer();
-}
-function renderAlias(vn, an){
-  const a = getAlias(vn, an);
-  return a
-    ? `<span class="acc-alias">${a}</span>`
-    : '<span class="acc-alias-empty">+ alias</span>';
-}
-
-function openAliasEdit(vn, an, el){
-  const cur = getAlias(vn, an);
-  const input = document.createElement("input");
-  input.value = cur;
-  input.placeholder = "Inserisci alias account...";
-  input.style.cssText = "background:var(--bg4);border:1px solid var(--accent);border-radius:4px;color:var(--text);font-size:10px;padding:2px 7px;outline:none;width:160px;font-family:'Outfit',sans-serif;";
-  el.replaceWith(input);
-  input.focus();
-  input.select();
-  const confirm = ()=>{
-    setAlias(vn, an, input.value);
-    renderVPSList();
-  };
-  input.addEventListener("blur", confirm);
-  input.addEventListener("keydown", e=>{ if(e.key==="Enter") confirm(); if(e.key==="Escape"){ input.value=cur; confirm(); } });
-}
-
 function saveDisabled(){
   localStorage.setItem("disabledEAs", JSON.stringify(disabledEAs));
   localStorage.setItem("disabledMT",  JSON.stringify(disabledMT));
@@ -578,44 +521,15 @@ async function syncNamesFromServer(){
     if(!r.ok) return;
     const j = await r.json();
     const serverNames = (j.names && typeof j.names === "object") ? j.names : {};
+    const serverCount = Object.keys(serverNames).length;
+    const localCount  = Object.keys(userNames).length;
 
-    // SERVER-WINS per chiavi esistenti: il server è la fonte di verità condivisa.
-    // Questo garantisce che le modifiche da altri dispositivi si propaghino.
-    // Eccezione: se stiamo dentro il pannello Nomi EA aperto, non sovrascrivere
-    // per non perdere modifiche in corso.
-    const settingsOpen = document.getElementById("settingsOverlay").classList.contains("open");
-    let changed = false;
-    Object.entries(serverNames).forEach(([k,v])=>{
-      if(!v) return;
-      if(String(k).startsWith("acc_")){
-        const ak = String(k).slice(4);
-        if(accountAliases[ak] !== String(v)){
-          accountAliases[ak] = String(v);
-          changed = true;
-        }
-      } else {
-        // Non sovrascrivere se il pannello è aperto (modifiche in corso)
-        if(!settingsOpen && userNames[String(k)] !== String(v)){
-          userNames[String(k)] = String(v);
-          changed = true;
-        }
-      }
-    });
-    if(changed){
+    if(serverCount > localCount){
+      // Il server ha più nomi (un altro dispositivo ha salvato dopo di noi) — prendiamo i suoi
+      Object.entries(serverNames).forEach(([k,v])=>{ if(v) userNames[String(k)]=String(v); });
       localStorage.setItem("eaNames", JSON.stringify(userNames));
-      localStorage.setItem("accountAliases", JSON.stringify(accountAliases));
-    }
-
-    // Rispedisci al server SOLO se ci sono chiavi locali che il server non ha
-    // (es. server riavviato e ha perso dati)
-    // NON rispedire se il server era già aggiornato — evita sovrascrittura accidentale
-    const localKeys = new Set([
-      ...Object.keys(userNames),
-      ...Object.keys(accountAliases).map(k=>"acc_"+k)
-    ]);
-    const serverKeys = new Set(Object.keys(serverNames));
-    const hasLocalOnly = [...localKeys].some(k=>!serverKeys.has(k));
-    if(hasLocalOnly){
+    } else if(localCount > 0){
+      // Noi abbiamo più nomi (server appena riavviato o mai sincronizzato) — rispediamo i nostri
       await syncNamesToServer();
     }
   }catch(e){ /* server in sleep o offline — localStorage è il backup */ }
@@ -624,13 +538,10 @@ async function syncNamesFromServer(){
 // Salva nomi sul server (non blocca l'UI)
 async function syncNamesToServer(){
   try{
-    // Unisce nomi EA e alias account in un unico oggetto
-    const combined = {...userNames};
-    Object.entries(accountAliases).forEach(([k,v])=>{ if(v) combined["acc_"+k]=v; });
     await fetch(SERVER_URL + "/api/names", {
       method:"POST",
       headers:{"Content-Type":"application/json","X-API-Key":"tradingvps"},
-      body: JSON.stringify({names: combined})
+      body: JSON.stringify({names: userNames})
     });
   }catch(e){ /* silenzioso — già salvato in localStorage */ }
 }
@@ -640,7 +551,8 @@ let refreshTimer=null;
 function isVPSEnabled(vn)       { return !disabledVPS[vn]; }
 function isMTEnabled(vn,an)     { return !disabledMT[`${vn}_${an}`]; }
 function isEAEnabled(vn,an,m)   { return !disabledEAs[`${vn}_${an}_${m}`]; }
-function isEnabled(vn,an,m)     { return isVPSEnabled(vn) && isMTEnabled(vn,an) && isEAEnabled(vn,an,m); }
+function isEnabled(vn,an,m)     { return isVPSEnabled(vn) && isEAEnabled(vn,an,m); }
+// isMTEnabled rimane per styling (row-off) ma non blocca le EA individuali
 // ── Toggle handlers ──────────────────────────────────────────────────────────
 function toggleVPSEnabled(vn,btn,e){
   e.stopPropagation();
@@ -654,11 +566,35 @@ function toggleVPSEnabled(vn,btn,e){
 function toggleMTEnabled(vn,an,btn,e){
   e.stopPropagation();
   const k=`${vn}_${an}`;
-  disabledMT[k]=!disabledMT[k];
-  if(!disabledMT[k]) delete disabledMT[k];
+  const wasOn = isMTEnabled(vn,an);
+  
+  if(wasOn){
+    // Stava ON → diventa OFF: disabilita tutte le EA sotto
+    // Trova tutte le EA di questo account e le disabilita
+    rawData.forEach(vps=>{
+      if(vps.vps_name!==vn) return;
+      (vps.accounts||[]).forEach(acc=>{
+        if(acc.account_number!==an) return;
+        (acc.eas||[]).forEach(ea=>{
+          disabledEAs[`${vn}_${an}_${ea.magic}`]=true;
+        });
+      });
+    });
+    disabledMT[k]=true;
+  } else {
+    // Stava OFF → diventa ON: riabilita tutte le EA sotto
+    rawData.forEach(vps=>{
+      if(vps.vps_name!==vn) return;
+      (vps.accounts||[]).forEach(acc=>{
+        if(acc.account_number!==an) return;
+        (acc.eas||[]).forEach(ea=>{
+          delete disabledEAs[`${vn}_${an}_${ea.magic}`];
+        });
+      });
+    });
+    delete disabledMT[k];
+  }
   saveDisabled();
-  btn.classList.toggle('on', isMTEnabled(vn,an));
-  btn.closest('.mt-block').classList.toggle('row-off', !isMTEnabled(vn,an));
   renderAll();
 }
 // ── Custom date range ────────────────────────────────────────────────────────
@@ -695,6 +631,11 @@ function getRange(){
     const bt=getBrokerTime();
     const from=bt>0?bt-(bt%86400):(()=>{const n=new Date();n.setUTCHours(0,0,0,0);return Math.floor(n.getTime()/1000);})();
     return{from,to:0};
+  }
+  if(currentHours==="ieri"){
+    const bt=getBrokerTime();
+    const todayStart=bt>0?bt-(bt%86400):(()=>{const n=new Date();n.setUTCHours(0,0,0,0);return Math.floor(n.getTime()/1000);})();
+    return{from:todayStart-86400,to:todayStart};
   }
   return{from:Math.floor(Date.now()/1000)-currentHours*3600,to:0};
 }
@@ -740,23 +681,6 @@ function calcAccStats(rawTrades,vn,an){
   return{wr:w/en.length*100,pf:gl>0?gp/gl:(gp>0?99:0),pl,trades:en.length};
 }
 // ── Aggregate per VPS (tutte le account abilitate) ───────────────────────────
-// Calcola DD massimo intraday (giorno corrente broker)
-function calcDailyDD(trades, balance){
-  if(!balance || !trades.length) return 0;
-  const bt = getBrokerTime();
-  const from = bt > 0 ? bt-(bt%86400) : (()=>{const n=new Date();n.setUTCHours(0,0,0,0);return Math.floor(n.getTime()/1000);})();
-  const today = trades.filter(t=>t.t>=from);
-  if(!today.length) return 0;
-  let cum=0, peak=0, dd=0;
-  today.sort((a,b)=>a.t-b.t).forEach(t=>{
-    cum+=t.p;
-    if(cum>peak) peak=cum;
-    const d=peak-cum;
-    if(d>dd) dd=d;
-  });
-  return balance>0 ? parseFloat((dd/balance*100).toFixed(2)) : 0;
-}
-
 function calcVPSStats(vps){
   if(!isVPSEnabled(vps.vps_name)) return{wr:0,pf:0,pl:0,trades:0};
   const trades=[];
@@ -882,8 +806,8 @@ function filterAccounts(vps){
 }
 
 async function fetchData(){
-  // Sincronizza nomi EA e alias ad ogni ciclo — propaga le modifiche su tutti i dispositivi
-  await syncNamesFromServer();
+  // Al primo caricamento sincronizza i nomi dal server
+  if(!rawData.length) await syncNamesFromServer();
   try{
     const r=await fetch(SERVER_URL+"/api/data",{cache:"no-store"});
     if(!r.ok)throw new Error("HTTP "+r.status);
@@ -1041,7 +965,7 @@ function renderRanking(){
     <td><span class="rank-num">${i+1}</span></td>
     <td><div class="rank-name">${e.name}</div><div class="rank-magic">Magic: ${e.magic}</div></td>
     <td class="td-r" style="color:var(--text)">${e.trades}</td>
-    <td><div class="rank-wr-wrap"><div class="rank-wr-bar"><div class="rank-wr-fill" style="width:${e.wr}%;background:${wrColor(e.wr)}"></div></div><span style="font-family:Verdana, sans-serif,monospace;font-size:10px;font-weight:700;color:${wrColor(e.wr)};width:38px;text-align:right">${e.wr.toFixed(1)}%</span></div></td>
+    <td><div class="rank-wr-wrap"><div class="rank-wr-bar"><div class="rank-wr-fill" style="width:${e.wr}%;background:${wrColor(e.wr)}"></div></div><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${wrColor(e.wr)};width:38px;text-align:right">${e.wr.toFixed(1)}%</span></div></td>
     <td class="td-r"><span class="pf-pill ${pfCls(e.pf)}">${e.pf>=99?'∞':e.pf.toFixed(2)}</span></td>
     <td class="td-r"><span class="pl-val ${plCls(e.pl)}">${fmtPL(e.pl)}</span></td>
     <td class="td-r">
@@ -1069,13 +993,7 @@ function renderVPSList(){
     const vpsOn=isVPSEnabled(vps.vps_name);
     const b=document.createElement("div");
     b.className="vps-block"+(vpsOn?'':' row-off');b.style.animationDelay=(vi*.07)+"s";
-    // Calcola balance/equity/DD aggregati per VPS
-    const vpsBalance = filterAccounts(vps).reduce((s,a)=>s+(a.balance||0),0);
-    const vpsEquity  = filterAccounts(vps).reduce((s,a)=>s+(a.equity||0),0);
-    const vpsAllTrades = [];
-    filterAccounts(vps).forEach(a=>(a.trades||[]).forEach(t=>{ if(isEAEnabled(vps.vps_name,a.account_number,t.m)) vpsAllTrades.push(t); }));
-    const vpsDDpct = calcDailyDD(vpsAllTrades, vpsBalance);
-    const aggH=`<div class="mcell"><div class="mcell-label">Win Rate</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Balance</div><div class="mcell-val neu">${vpsBalance>0?fmtPL(vpsBalance):'—'}</div></div><div class="mcell"><div class="mcell-label">Equity</div><div class="mcell-val ${vpsEquity>=vpsBalance?'pos':'neg'}">${vpsEquity>0?fmtPL(vpsEquity):'—'}</div></div><div class="mcell"><div class="mcell-label">DD% oggi</div><div class="mcell-val ${vpsDDpct>10?'neg':vpsDDpct>5?'acc':'pos'}">${vpsDDpct>0?vpsDDpct.toFixed(2)+'%':'—'}</div></div><div class="mcell"><div class="mcell-label">Operazioni</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accs.length}</div></div>`;
+    const aggH=`<div class="mcell"><div class="mcell-label">Win Rate</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Operazioni</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accs.length}</div></div>`;
     b.innerHTML=`<div class="vps-header ${isOpen?'open':''}" onclick="toggleVPS('${vps.vps_name}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="vps-name-group"><span class="vps-badge">${vps.vps_name}</span><div><div class="vps-name">${vps.vps_name}</div><div class="vps-meta">${accs.length} account · ${accs.reduce((s,a)=>s+(a.eas||[]).length,0)} EA</div></div></div>${aggH}<button class="row-toggle ${vpsOn?'on':''}" title="${vpsOn?'Disabilita VPS':'Abilita VPS'}" onclick="toggleVPSEnabled('${vps.vps_name}',this,event)"></button></div><div class="vps-content ${isOpen?'open':''}" id="vc-${vps.vps_name}">${accs.length?accs.map(acc=>renderMT(vps,acc)).join(""):'<div class="state-box" style="padding:16px"><span>Nessun account per il filtro.</span></div>'}</div>`;
     c.appendChild(b);
   });
@@ -1143,100 +1061,40 @@ function renderMT(vps,acc){
     ?`<span class="alert-badge ${status.level==='stale'?'alert-stale':'alert-warn'}" title="${status.reason}">${status.label}</span>`
     :`<span class="alert-badge alert-ok">✓ Live</span>`;
   const staleClass=status.level==='stale'?' mt-stale':status.level==='warn'?' mt-warn':'';
-  return `<div class="mt-block${mtOn?'':' row-off'}${staleClass}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><div style="display:flex;flex-direction:column;gap:1px"><div style="display:flex;align-items:center;gap:5px"><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span></div><div onclick="openAliasEdit('${vps.vps_name}',${acc.account_number},this)" style="display:block">${renderAlias(vps.vps_name,acc.account_number)}</div></div>${alertBadge}</div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Balance</div><div class="mcell-val neu">${acc.balance>0?fmtPL(acc.balance):'—'}</div></div><div class="mcell"><div class="mcell-label">Equity</div><div class="mcell-val ${(acc.equity||0)>=(acc.balance||0)?'pos':'neg'}">${acc.equity>0?fmtPL(acc.equity):'—'}</div></div><div class="mcell"><div class="mcell-label">DD% oggi</div><div class="mcell-val ${calcDailyDD(acc.trades||[],acc.balance)>10?'neg':calcDailyDD(acc.trades||[],acc.balance)>5?'acc':'pos'}">${calcDailyDD(acc.trades||[],acc.balance)>0?calcDailyDD(acc.trades||[],acc.balance).toFixed(2)+'%':'—'}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'')}</div></div>`;
+  return `<div class="mt-block${mtOn?'':' row-off'}${staleClass}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span>${alertBadge}</div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'')}</div></div>`;
 }
 
-function sortEATable(vn, an, col){
-  const key = vn+"_"+an;
-  const cur = EA_SORT[key] || {col:'pl', dir:'desc'};
-  EA_SORT[key] = {col, dir: (cur.col===col && cur.dir==='desc') ? 'asc' : 'desc'};
-  renderVPSList();
-}
-
-function renderEATable(eas, trades, vn, an, currency){
-  const total = calcAccStats(trades, vn, an);
-  const key   = vn+"_"+an;
-  const sort  = EA_SORT[key] || {col:'pl', dir:'desc'};
-
-  const eaData = eas.map(ea=>{
-    const on = isEnabled(vn, an, ea.magic);
-    const s  = calcStats(trades, ea.magic, !on);
-    return {ea, on, s};
-  });
-
-  eaData.sort((a, b)=>{
-    if(sort.col==='name'){
-      const av=getEAName(a.ea.magic,a.ea.name).toLowerCase();
-      const bv=getEAName(b.ea.magic,b.ea.name).toLowerCase();
-      return sort.dir==='asc'?av.localeCompare(bv):bv.localeCompare(av);
-    }
-    const vals = {wr:[a.s.wr,b.s.wr], pf:[a.s.pf,b.s.pf], pl:[a.s.pl,b.s.pl], trades:[a.s.trades,b.s.trades]};
-    const [av,bv] = vals[sort.col]||[0,0];
-    return sort.dir==='asc' ? av-bv : bv-av;
-  });
-
-  const rows = eaData.map(({ea,on,s})=>
-    `<tr class="${on?'':'disabled'}">
-      <td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vn}',${an},${ea.magic},this)"></button></td>
-      <td style="cursor:pointer" onclick="openEAModal(${ea.magic},'${getEAName(ea.magic,ea.name).replace(/'/g,"\'")}')">
-        <div class="ea-name" style="color:var(--text2)">${getEAName(ea.magic,ea.name)}</div>
-        <div class="ea-magic-sub">Magic: ${ea.magic} &nbsp;·&nbsp; <span style="color:var(--accent);font-size:8px">▶ dettaglio</span></div>
-      </td>
-      <td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span></div></td>
-      <td style="text-align:right"><span class="pf-pill ${pfCls(s.pf)}">${s.pf>=99?'∞':s.pf.toFixed(2)}</span></td>
-      <td style="text-align:right"><span class="pl-val ${plCls(s.pl)}">${fmtPL(s.pl)}</span><div style="font-size:8px;color:var(--text3)">${currency}</div></td>
-      <td style="text-align:right;font-family:Verdana, sans-serif,monospace;font-size:11px;color:var(--text2)">${s.trades}</td>
-    </tr>`
-  ).join('');
-
-  const th = (col, label, align='') => {
-    const active = sort.col===col;
-    const arrow  = active ? (sort.dir==='asc'?'▲':'▼') : '⇅';
-    const cls    = `sort-th${active?' sort-'+sort.dir:''} ${align}`;
-    return `<th class="${cls}" onclick="sortEATable('${vn}',${an},'${col}')">${label} <span class="sort-arrow" style="font-size:8px;opacity:${active?1:.4};color:${active?'var(--accent)':'inherit'}">${arrow}</span></th>`;
-  };
-
-  return `<table class="ea-table"><thead><tr>
-    <th style="width:38px"></th>
-    ${th('name','EA / Magic')}
-    ${th('wr','Win Rate')}
-    ${th('pf','P.Factor','r')}
-    ${th('pl','P&L','r')}
-    ${th('trades','Trade','r')}
-  </tr></thead><tbody>${rows}
-  <tr class="total-row">
-    <td></td><td><strong>Totale Account</strong></td>
-    <td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${total.wr}%;background:${wrColor(total.wr)}"></div></div><span class="wr-val" style="color:${wrColor(total.wr)};font-size:12px">${total.wr.toFixed(1)}%</span></div></td>
-    <td style="text-align:right"><span class="pf-pill ${pfCls(total.pf)}">${total.pf>=99?'∞':total.pf.toFixed(2)}</span></td>
-    <td style="text-align:right"><span class="pl-val ${plCls(total.pl)}" style="font-size:13px">${fmtPL(total.pl)}</span></td>
-    <td style="text-align:right;font-family:Verdana, sans-serif,monospace;font-weight:700"><strong>${total.trades}</strong></td>
-  </tr></tbody></table>`;
+function renderEATable(eas,trades,vn,an,currency){
+  const total=calcAccStats(trades,vn,an);
+  const rows=eas.map(ea=>{
+    const on=isEnabled(vn,an,ea.magic);
+    const s=calcStats(trades,ea.magic,!on);
+    return`<tr class="${on?'':'disabled'}"><td><button class="ea-toggle ${on?'on':''}" onclick="toggleEA('${vn}',${an},${ea.magic},this)"></button></td><td style="cursor:pointer" onclick="openEAModal(${ea.magic},'${getEAName(ea.magic,ea.name).replace(/'/g,"\\'")}')"><div class="ea-name" style="color:var(--text2)">${getEAName(ea.magic,ea.name)}</div><div class="ea-magic-sub">Magic: ${ea.magic} &nbsp;·&nbsp; <span style="color:var(--accent);font-size:8px">▶ dettaglio</span></div></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${s.wr}%;background:${wrColor(s.wr)}"></div></div><span class="wr-val" style="color:${wrColor(s.wr)}">${s.wr.toFixed(0)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(s.pf)}">${s.pf>=99?'∞':s.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(s.pl)}">${fmtPL(s.pl)}</span><div style="font-size:8px;color:var(--text3)">${currency}</div></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">${s.trades}</td></tr>`;
+  }).join('');
+  return`<table class="ea-table"><thead><tr><th style="width:38px"></th><th>EA / Magic</th><th>Win Rate</th><th class="r">P.Factor</th><th class="r">P&L</th><th class="r">Trade</th></tr></thead><tbody>${rows}<tr class="total-row"><td></td><td><strong>Totale Account</strong></td><td><div class="wr-wrap"><div class="wr-bar"><div class="wr-fill" style="width:${total.wr}%;background:${wrColor(total.wr)}"></div></div><span class="wr-val" style="color:${wrColor(total.wr)};font-size:12px">${total.wr.toFixed(1)}%</span></div></td><td style="text-align:right"><span class="pf-pill ${pfCls(total.pf)}">${total.pf>=99?'∞':total.pf.toFixed(2)}</span></td><td style="text-align:right"><span class="pl-val ${plCls(total.pl)}" style="font-size:13px">${fmtPL(total.pl)}</span></td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700"><strong>${total.trades}</strong></td></tr></tbody></table>`;
 }
 
 function sparkSVG(trades,w=80,h=28){if(!trades||trades.length<2)return`<svg width="${w}" height="${h}"></svg>`;const s=[...trades].sort((a,b)=>a.t-b.t).slice(-30);let cum=0;const pts=s.map(t=>{cum+=t.p;return cum;});const mn=Math.min(...pts),mx=Math.max(...pts),range=mx-mn||1;const xs=pts.map((_,i)=>i*(w-2)/(pts.length-1)+1);const ys=pts.map(p=>h-2-((p-mn)/range)*(h-4));const d=xs.map((x,i)=>(i===0?'M':'L')+x.toFixed(1)+','+ys[i].toFixed(1)).join(' ');const col=pts[pts.length-1]>=0?'#00d97e':'#ff3d5e';return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path d="${d}" stroke="${col}" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>`;}
 // ══════════════════════════════════════════════════════════════
 //  EA DETAIL MODAL
 // ══════════════════════════════════════════════════════════════
-const EAM = { magic:null, name:'', trades:[], hours:'1d', customFrom:0, customTo:0, custom:false, mode:'both' };
-// Stato sort tabelle EA per account: key = "VPS_accNum"
-const EA_SORT = {}; // {key: {col:'pl', dir:'desc'}}
+const EAM = { magic:null, name:'', trades:[], hours:'1d', customFrom:0, customTo:0, custom:false };
 const EACI = {}; // chart instances del modale
 
 function destroyEAChart(id){ if(EACI[id]){EACI[id].destroy();delete EACI[id];} }
 
-// Raccoglie TUTTI i trade per un magic da rawData (senza filtro tempo/mode)
-// Aggiunge campo 'mode' a ogni trade per filtrare live/demo nel modale
+// Raccoglie TUTTI i trade per un magic da rawData (senza filtro tempo)
+// rispetta solo filtri mode/terminal/enabled
 function getAllTradesForMagic(magic){
   const a=[];
   rawData.forEach(vps=>{
     if(!isVPSEnabled(vps.vps_name)) return;
-    (vps.accounts||[]).forEach(acc=>{
+    filterAccounts(vps).forEach(acc=>{
       if(!isMTEnabled(vps.vps_name,acc.account_number)) return;
       (acc.trades||[]).forEach(t=>{
         if(t.m!==magic) return;
         if(!isEAEnabled(vps.vps_name,acc.account_number,t.m)) return;
-        // Aggiunge mode dell'account al trade (per filtro live/demo nel modale)
-        a.push({...t, mode: acc.mode||'demo'});
+        a.push(t);
       });
     });
   });
@@ -1246,17 +1104,12 @@ function getAllTradesForMagic(magic){
 function openEAModal(magic, name){
   EAM.magic = magic;
   EAM.name  = name;
-  EAM.trades= getAllTradesForMagic(magic); // tutti i trade, filtro tempo/mode gestito dal modale
+  EAM.trades= getAllTradesForMagic(magic); // tutti i trade, filtro tempo gestito dal modale
   EAM.hours = '1d';
   EAM.custom= false;
-  EAM.mode  = 'both';
-  // Reset pill periodo
+  // Reset pill
   document.querySelectorAll('#eaPeriodGroup .pill-btn').forEach(b=>{
     b.className='pill-btn'+(b.dataset.ep==='1d'?' active-time':'');
-  });
-  // Reset pill mode
-  document.querySelectorAll('#eaModeGroup .pill-btn').forEach(b=>{
-    b.className='pill-btn'+(b.dataset.em==='both'?' active-both':'');
   });
   // Clear date inputs
   document.getElementById('eaDateFrom').value='';
@@ -1279,16 +1132,6 @@ function setEAPeriod(btn){
   renderEAModal();
 }
 
-function setEAMode(btn){
-  EAM.mode = btn.dataset.em;
-  const m = EAM.mode;
-  document.querySelectorAll('#eaModeGroup .pill-btn').forEach(b=>{
-    const bm = b.dataset.em;
-    b.className = 'pill-btn' + (b===btn ? (bm==='both'?' active-both':bm==='live'?' active-live':' active-demo') : '');
-  });
-  renderEAModal();
-}
-
 function applyEACustomRange(){
   const f=document.getElementById('eaDateFrom').value;
   const t=document.getElementById('eaDateTo').value;
@@ -1302,11 +1145,8 @@ function applyEACustomRange(){
 }
 
 function getEAModalTrades(){
-  let all = EAM.trades;
+  const all = EAM.trades;
   if(!all.length) return [];
-  // Filtro mode (live/demo)
-  if(EAM.mode!=='both') all = all.filter(t=>t.mode===EAM.mode);
-  // Filtro periodo
   if(EAM.custom) return all.filter(t=>t.t>=EAM.customFrom&&t.t<=EAM.customTo);
   if(EAM.hours===0) return all;
   if(EAM.hours==='1d'){
@@ -1320,7 +1160,7 @@ function getEAModalTrades(){
 
 function renderEAModal(){
   const trades=getEAModalTrades();
-  const TT2={backgroundColor:'rgba(8,10,22,0.97)',borderColor:'rgba(29,33,64,0.8)',borderWidth:1,titleColor:'#d4d9f0',bodyColor:'rgba(102,110,156,0.9)',padding:10,displayColors:false,titleFont:{family:"Verdana, sans-serif,monospace",size:10},bodyFont:{family:"Verdana, sans-serif,monospace",size:10}};
+  const TT2={backgroundColor:'rgba(8,10,22,0.97)',borderColor:'rgba(29,33,64,0.8)',borderWidth:1,titleColor:'#d4d9f0',bodyColor:'rgba(102,110,156,0.9)',padding:10,displayColors:false,titleFont:{family:"'JetBrains Mono',monospace",size:10},bodyFont:{family:"'JetBrains Mono',monospace",size:10}};
 
   // ── KPI ──────────────────────────────────────────────────────
   let wins=0,pl=0,gp=0,gl=0;
@@ -1377,9 +1217,9 @@ function renderEAModal(){
   document.getElementById('eaModalWR').textContent=trades.length?wr.toFixed(1)+'%':'—';
   document.getElementById('eaModalWR').className=wr>=65?'pos':wr>=50?'acc':'neg';
   document.getElementById('eaModalWLStats').innerHTML=`
-    <span><span style="color:var(--green);font-weight:700;font-family:Verdana, sans-serif,monospace">${wins}</span> <span style="color:var(--text3);font-size:9px">WIN</span></span>
-    <span><span style="color:var(--red);font-weight:700;font-family:Verdana, sans-serif,monospace">${losses}</span> <span style="color:var(--text3);font-size:9px">LOSS</span></span>
-    <span><span style="color:var(--text);font-weight:700;font-family:Verdana, sans-serif,monospace">${trades.length}</span> <span style="color:var(--text3);font-size:9px">TOT</span></span>`;
+    <span><span style="color:var(--green);font-weight:700;font-family:'JetBrains Mono',monospace">${wins}</span> <span style="color:var(--text3);font-size:9px">WIN</span></span>
+    <span><span style="color:var(--red);font-weight:700;font-family:'JetBrains Mono',monospace">${losses}</span> <span style="color:var(--text3);font-size:9px">LOSS</span></span>
+    <span><span style="color:var(--text);font-weight:700;font-family:'JetBrains Mono',monospace">${trades.length}</span> <span style="color:var(--text3);font-size:9px">TOT</span></span>`;
   if(trades.length){
     EACI['eaDonut']=new Chart(document.getElementById('eaModalDonut').getContext('2d'),{type:'doughnut',data:{labels:['Win','Loss'],datasets:[{data:[wins,losses],backgroundColor:['rgba(0,217,126,0.75)','rgba(255,61,94,0.65)'],borderColor:['#00d97e','#ff3d5e'],borderWidth:1.5,hoverOffset:4}]},options:{cutout:'70%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT2}}}});
   }
@@ -1495,14 +1335,14 @@ function setTerminal(btn){
 }
 function setPeriod(btn){
   const val=btn.dataset.hours;
-  currentHours=val==="0"?0:val==="1d"?"1d":parseInt(val);
+  currentHours=val==="0"?0:val==="1d"?"1d":val==="ieri"?"ieri":parseInt(val);
   usingCustom=false;
   document.querySelectorAll("#timeGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?" active-time":""));
   const cb=document.getElementById('customBtn');cb.className='pill-btn';cb.textContent='⊞ Custom';
   updateLabel();renderAll();
 }
 function updateLabel(){
-  const p={"1d":"Giorno corrente (broker)",168:"Ultimi 7 Giorni",720:"Ultimi 30 Giorni",0:"Tutto lo storico"};
+  const p={"1d":"Giorno corrente (broker)","ieri":"Ieri",168:"Ultimi 7 Giorni",720:"Ultimi 30 Giorni",0:"Tutto lo storico"};
   const m={both:"Tutti",live:"Solo Live",demo:"Solo Demo"};
   const t={both:"",MT4:" · Solo MT4",MT5:" · Solo MT5"};
   const period=usingCustom
@@ -1510,42 +1350,6 @@ function updateLabel(){
     :(p[currentHours]||'Periodo');
   document.getElementById("filterLabel").textContent=`${period} · ${m[currentMode]}${t[currentTerminal]}`;
 }
-function resetFilters(){
-  // 1. Ripristina filtri: Tutti + MT4+5 + TOT
-  currentMode     = "both";
-  currentTerminal = "both";
-  currentHours    = 0;
-  usingCustom     = false;
-  // Reset pill mode → Tutti
-  document.querySelectorAll("#modeGroup .pill-btn").forEach(b=>{
-    b.className = "pill-btn" + (b.dataset.mode==="both" ? " active-both" : "");
-  });
-  // Reset pill terminal → MT4+5
-  document.querySelectorAll("#termGroup .pill-btn").forEach(b=>{
-    b.className = "pill-btn" + (b.dataset.term==="both" ? " active-term" : "");
-  });
-  // Reset pill periodo → TOT
-  document.querySelectorAll("#timeGroup .pill-btn").forEach(b=>{
-    b.className = "pill-btn" + (b.dataset.hours==="0" ? " active-time" : "");
-  });
-  // Reset custom button
-  const cb = document.getElementById("customBtn");
-  cb.className = "pill-btn";
-  cb.textContent = "⊞ Custom";
-  document.getElementById("dateFrom").value = "";
-  document.getElementById("dateTo").value   = "";
-  document.getElementById("datePicker").classList.remove("open");
-
-  // 2. Riabilita tutti i toggle (VPS, MT account, EA)
-  disabledVPS = {};
-  disabledMT  = {};
-  disabledEAs = {};
-  saveDisabled();
-
-  updateLabel();
-  renderAll();
-}
-
 function renderAll(){renderKPI();renderAlerts();renderCharts();renderRanking();renderVPSList();}
 // ── Version display ──
 document.getElementById('verHeader').textContent='v'+APP_VERSION;
