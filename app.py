@@ -17,6 +17,10 @@ data_lock  = threading.Lock()
 ea_names_store = {}
 ea_names_lock  = threading.Lock()
 
+# Tipi account in memoria — challenge / funded / instant / live / demo
+account_types_store = {}
+account_types_lock  = threading.Lock()
+
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
@@ -69,6 +73,29 @@ def set_names():
     print(f"[{now_iso()}] Nomi EA aggiornati: {len(ea_names_store)} voci")
     return jsonify({"status": "ok", "saved": len(ea_names_store)}), 200
 
+@app.route("/api/account_types", methods=["GET"])
+def get_account_types():
+    with account_types_lock:
+        return jsonify({"status": "ok", "types": dict(account_types_store),
+                        "updated_at": now_iso()})
+
+@app.route("/api/account_types", methods=["POST"])
+def set_account_types():
+    if request.headers.get("X-API-Key") != API_KEY:
+        return jsonify({"error": "Unauthorized"}), 401
+    payload = request.get_json(force=True, silent=True)
+    if not payload or "types" not in payload:
+        return jsonify({"error": "Campo 'types' mancante"}), 400
+    types = payload["types"]
+    if not isinstance(types, dict):
+        return jsonify({"error": "'types' deve essere un oggetto"}), 400
+    valid = {"challenge","funded","instant","live","demo"}
+    with account_types_lock:
+        account_types_store.clear()
+        account_types_store.update({str(k): str(v) for k, v in types.items() if v in valid})
+    print(f"[{now_iso()}] Tipi account aggiornati: {len(account_types_store)} voci")
+    return jsonify({"status": "ok", "saved": len(account_types_store)}), 200
+
 @app.route("/", methods=["GET"])
 @app.route("/health", methods=["GET"])
 def health():
@@ -77,9 +104,11 @@ def health():
         acc_count = sum(len(v) for v in data_store.values())
     with ea_names_lock:
         names_count = len(ea_names_store)
+    with account_types_lock:
+        types_count = len(account_types_store)
     return jsonify({"status": "online", "updated_at": now_iso(),
                     "vps_active": vps_count, "accounts": acc_count,
-                    "ea_names": names_count})
+                    "ea_names": names_count, "account_types": types_count})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
