@@ -31,7 +31,7 @@ header::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
 .pill-btn.active-live{background:rgba(0,217,126,.12);color:var(--live);border:1px solid rgba(0,217,126,.28);}
 .pill-btn.active-demo{background:rgba(157,127,255,.12);color:var(--demo);border:1px solid rgba(157,127,255,.28);}
 .pill-btn.active-reale{background:rgba(0,217,126,.12);color:var(--green);border:1px solid rgba(0,217,126,.28);}
-.pill-btn.active-virtuale{background:rgba(240,165,0,.12);color:var(--accent);border:1px solid rgba(240,165,0,.28);}
+.pill-btn.active-virtuale{background:rgba(157,127,255,.12);color:var(--purple);border:1px solid rgba(157,127,255,.28);}
 .pill-btn.active-time{background:var(--bg4);color:var(--accent);border:1px solid var(--border2);font-family:'JetBrains Mono',monospace;}
 .pill-btn.active-term{background:rgba(77,132,255,.14);color:var(--blue);border:1px solid rgba(77,132,255,.28);font-family:'JetBrains Mono',monospace;}
 /* ── Account type badge ─────────────────────────────────────────────────── */
@@ -45,7 +45,7 @@ header::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;back
 /* ── Account type dropdown ──────────────────────────────────────────────── */
 .acc-type-menu{position:fixed;z-index:9999;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:6px;box-shadow:0 8px 32px rgba(0,0,0,.7);min-width:160px;display:none;}
 .acc-type-menu.open{display:block;}
-.acc-type-menu-title{font-size:8px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);padding:4px 8px 6px;font-weight:700;}
+
 .acc-type-menu-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;cursor:pointer;transition:background .12s;font-size:11px;font-weight:600;}
 .acc-type-menu-item:hover{background:var(--bg4);}
 .acc-type-menu-item .type-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
@@ -221,7 +221,25 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-top:1px solid var(--border);margin-top:20px;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;}
 @media(max-width:1300px){.kpi-strip{grid-template-columns:repeat(3,1fr);}.chart-grid-2{grid-template-columns:1fr 1fr;}}
 @media(max-width:1000px){.vps-header{grid-template-columns:20px 1fr repeat(4,88px);}.mt-header{grid-template-columns:20px 1fr repeat(4,78px);}.chart-grid-2,.chart-grid-2b{grid-template-columns:1fr;}}
-@media(max-width:700px){header{height:auto;padding:10px 14px;}main{padding:12px;}.kpi-strip{grid-template-columns:1fr 1fr;}.vps-header{grid-template-columns:20px 1fr repeat(3,75px);}.mt-header{grid-template-columns:20px 1fr repeat(3,70px);}}
+@media(max-width:900px){
+  .pill-btn{padding:3px 7px;font-size:9px;}
+  .header-right{gap:5px;}
+}
+@media(max-width:700px){
+  header{height:auto;padding:8px 12px;gap:6px;}
+  .header-right{width:100%;flex-wrap:wrap;gap:4px;justify-content:flex-start;}
+  .pill-group{flex-wrap:wrap;}
+  .pill-btn{padding:3px 6px;font-size:9px;}
+  .live-badge{display:none;}
+  main{padding:12px;}
+  .kpi-strip{grid-template-columns:1fr 1fr;}
+  .vps-header{grid-template-columns:20px 1fr repeat(3,75px);}
+  .mt-header{grid-template-columns:20px 1fr repeat(3,70px);}
+}
+@media(max-width:480px){
+  .pill-btn{padding:3px 5px;font-size:8px;letter-spacing:0;}
+  .pill-group{gap:1px;}
+}
 /* Colonne ordinabili */
 .sort-th{cursor:pointer;user-select:none;white-space:nowrap;}
 .sort-th:hover{color:var(--accent)!important;}
@@ -318,10 +336,10 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
     <div class="live-badge">Live</div>
     <div class="pill-group" id="modeGroup">
       <button class="pill-btn" data-mode="both" onclick="setMode(this)">Tutti</button>
-      <button class="pill-btn active-live" data-mode="live" onclick="setMode(this)">Live</button>
-      <button class="pill-btn" data-mode="demo" onclick="setMode(this)">Demo</button>
+      <button class="pill-btn active-live" data-mode="live" onclick="setMode(this)">🔴 Live</button>
       <button class="pill-btn" data-mode="reale" onclick="setMode(this)">💰 Reale</button>
       <button class="pill-btn" data-mode="virtuale" onclick="setMode(this)">🎯 Virtuale</button>
+      <button class="pill-btn" data-mode="demo" onclick="setMode(this)">🔵 Demo</button>
     </div>
     <div class="pill-group" id="termGroup">
       <button class="pill-btn active-term" data-term="both" onclick="setTerminal(this)">MT4+5</button>
@@ -506,15 +524,21 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 <!-- ── Account Type floating menu ──────────────────────────────────────── -->
 <div class="acc-type-menu" id="accTypeMenu">
   <div class="acc-type-menu-title">Tipo Conto</div>
-  <div class="acc-type-menu-item" onclick="applyAccountType('challenge')"><span class="type-dot" style="background:var(--accent)"></span>Challenge<span class="type-sub">virtuale</span></div>
-  <div class="acc-type-menu-item" onclick="applyAccountType('funded')"><span class="type-dot" style="background:var(--green)"></span>Funded<span class="type-sub">reale</span></div>
+
+  <div class="acc-type-section">🔴 LIVE &middot; 💰 Conto Reale</div>
+  <div class="acc-type-menu-item" onclick="applyAccountType('funded')"><span class="type-dot" style="background:var(--green)"></span>Conto Reale<span class="type-sub">reale</span></div>
   <div class="acc-type-menu-item" onclick="applyAccountType('instant')"><span class="type-dot" style="background:var(--blue)"></span>Instant Funded<span class="type-sub">reale</span></div>
-  <div class="acc-type-menu-item" onclick="applyAccountType('live')"><span class="type-dot" style="background:var(--green)"></span>Live Standard<span class="type-sub">reale</span></div>
-  <div class="acc-type-menu-item" onclick="applyAccountType('demo')"><span class="type-dot" style="background:var(--demo)"></span>Demo<span class="type-sub">virtuale</span></div>
+
+  <div class="acc-type-section">🔴 LIVE &middot; 🎯 Conto Virtuale</div>
+  <div class="acc-type-menu-item" onclick="applyAccountType('challenge')"><span class="type-dot" style="background:var(--accent)"></span>Challenge<span class="type-sub">virtuale</span></div>
+  <div class="acc-type-menu-item" onclick="applyAccountType('instant_v')"><span class="type-dot" style="background:var(--purple)"></span>Instant Funded<span class="type-sub">virtuale</span></div>
+
+  <div class="acc-type-section">🔵 DEMO</div>
+  <div class="acc-type-menu-item" onclick="applyAccountType('demo')"><span class="type-dot" style="background:var(--demo)"></span>Conto Demo<span class="type-sub">demo</span></div>
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.5.0";
+const APP_VERSION="4.6.0";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -585,13 +609,17 @@ async function syncNamesToServer(){
 }
 
 // ── Account Types — sincronizzati col server ──────────────────────────────
-// challenge=virtuale, funded/instant/live=reale, demo=virtuale
+// Gerarchia: LIVE→(REALE:funded/instant/live | VIRTUALE:challenge/instant_v) | DEMO
 const ACC_TYPE_CFG = {
-  challenge: {label:"CHALLENGE", cls:"type-challenge", real:false},
-  funded:    {label:"FUNDED",    cls:"type-funded",    real:true},
-  instant:   {label:"INSTANT",   cls:"type-instant",   real:true},
-  live:      {label:"LIVE",      cls:"type-live",      real:true},
-  demo:      {label:"DEMO",      cls:"type-demo",      real:false},
+  // LIVE · CONTO REALE
+  funded:    {label:"CONTO REALE",    cls:"type-funded",     real:true,  category:"reale"},
+  instant:   {label:"INSTANT FUNDED", cls:"type-instant",    real:true,  category:"reale"},
+  live:      {label:"LIVE STD",       cls:"type-live",       real:true,  category:"reale"},
+  // LIVE · CONTO VIRTUALE
+  challenge: {label:"CHALLENGE",      cls:"type-challenge",  real:false, category:"virtuale"},
+  instant_v: {label:"INSTANT FUNDED", cls:"type-instant-v",  real:false, category:"virtuale"},
+  // DEMO
+  demo:      {label:"DEMO",           cls:"type-demo",       real:false, category:"demo"},
 };
 let accountTypes = {};
 try{ const r=localStorage.getItem("accountTypes"); if(r) accountTypes=JSON.parse(r); }catch(e){ accountTypes={}; }
@@ -599,9 +627,11 @@ try{ const r=localStorage.getItem("accountTypes"); if(r) accountTypes=JSON.parse
 function getAccountType(acc){
   const t = accountTypes[String(acc.account_number)];
   if(t && ACC_TYPE_CFG[t]) return t;
+  // Default: live→live (reale), demo→demo
   return acc.mode === 'live' ? 'live' : 'demo';
 }
 function isRealMoney(type){ return ACC_TYPE_CFG[type]?.real === true; }
+function getAccountCategory(acc){ return ACC_TYPE_CFG[getAccountType(acc)]?.category || (acc.mode==='live'?'reale':'demo'); }
 
 async function syncAccountTypesFromServer(){
   try{
@@ -925,9 +955,10 @@ function plCls(n){return n>=0?"pos":"neg";}
 // fix stale isEnabled override
 function filterAccounts(vps){
   let accs = vps.accounts||[];
-  if(currentMode==="reale")         accs=accs.filter(a=>isRealMoney(getAccountType(a)));
-  else if(currentMode==="virtuale") accs=accs.filter(a=>!isRealMoney(getAccountType(a)));
-  else if(currentMode!=="both")     accs=accs.filter(a=>a.mode===currentMode);
+  if(currentMode==="live")          accs=accs.filter(a=>{ const cfg=ACC_TYPE_CFG[getAccountType(a)]; return cfg ? cfg.category!=='demo' : a.mode==='live'; });
+  else if(currentMode==="demo")     accs=accs.filter(a=>{ const cfg=ACC_TYPE_CFG[getAccountType(a)]; return cfg ? cfg.category==='demo' : a.mode==='demo'; });
+  else if(currentMode==="reale")    accs=accs.filter(a=>ACC_TYPE_CFG[getAccountType(a)]?.category==='reale');
+  else if(currentMode==="virtuale") accs=accs.filter(a=>ACC_TYPE_CFG[getAccountType(a)]?.category==='virtuale');
   if(currentTerminal!=="both") accs=accs.filter(a=>(a.terminal||'MT4').toUpperCase()===currentTerminal);
   return accs;
 }
@@ -1536,7 +1567,13 @@ function toggleEA(vps,acc,magic,btn){
   renderAll();
 }
 function toggleAllVPS(){allExpanded=!allExpanded;rawData.forEach(v=>{expandedVps[v.vps_name]=allExpanded;});document.getElementById('expandAllBtn').textContent=allExpanded?'▼ Comprimi tutto':'▶ Espandi tutto';renderVPSList();}
-function setMode(btn){currentMode=btn.dataset.mode;document.querySelectorAll("#modeGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?` active-${currentMode}`:""));updateLabel();renderAll();}
+function setMode(btn){
+  currentMode=btn.dataset.mode;
+  document.querySelectorAll("#modeGroup .pill-btn").forEach(b=>{
+    b.className="pill-btn"+(b===btn?` active-${currentMode}`:"");
+  });
+  updateLabel();renderAll();
+}
 function setTerminal(btn){
   currentTerminal=btn.dataset.term;
   document.querySelectorAll("#termGroup .pill-btn").forEach(b=>b.className="pill-btn"+(b===btn?" active-term":""));
@@ -1552,7 +1589,7 @@ function setPeriod(btn){
 }
 function updateLabel(){
   const p={"1d":"Giorno corrente (broker)","ieri":"Ieri",168:"Ultimi 7 Giorni",720:"Ultimi 30 Giorni",0:"Tutto lo storico"};
-  const m={both:"Tutti",live:"Solo Live",demo:"Solo Demo",reale:"💰 Solo Reale",virtuale:"🎯 Solo Virtuale"};
+  const m={both:"Tutti",live:"🔴 Live",demo:"🔵 Demo",reale:"💰 Reale",virtuale:"🎯 Virtuale"};
   const t={both:"",MT4:" · Solo MT4",MT5:" · Solo MT5"};
   const period=usingCustom
     ?`${document.getElementById('dateFrom').value} → ${document.getElementById('dateTo').value}`
