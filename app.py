@@ -21,6 +21,13 @@ ea_names_lock  = threading.Lock()
 account_types_store = {}
 account_types_lock  = threading.Lock()
 
+# Account archiviati in memoria — chiave "VPS_accountNumber" -> True
+# Esclusione DEFINITIVA dalle statistiche (es. challenge fallite), sincronizzata
+# tra tutti i dispositivi. Non va confusa con account_types: qui non c'è
+# categoria, solo dentro/fuori dall'archivio.
+archived_accounts_store = {}
+archived_accounts_lock  = threading.Lock()
+
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
@@ -96,6 +103,28 @@ def set_account_types():
     print(f"[{now_iso()}] Tipi account aggiornati: {len(account_types_store)} voci")
     return jsonify({"status": "ok", "saved": len(account_types_store)}), 200
 
+@app.route("/api/archived_accounts", methods=["GET"])
+def get_archived_accounts():
+    with archived_accounts_lock:
+        return jsonify({"status": "ok", "archived": dict(archived_accounts_store),
+                        "updated_at": now_iso()})
+
+@app.route("/api/archived_accounts", methods=["POST"])
+def set_archived_accounts():
+    if request.headers.get("X-API-Key") != API_KEY:
+        return jsonify({"error": "Unauthorized"}), 401
+    payload = request.get_json(force=True, silent=True)
+    if not payload or "archived" not in payload:
+        return jsonify({"error": "Campo 'archived' mancante"}), 400
+    archived = payload["archived"]
+    if not isinstance(archived, dict):
+        return jsonify({"error": "'archived' deve essere un oggetto"}), 400
+    with archived_accounts_lock:
+        archived_accounts_store.clear()
+        archived_accounts_store.update({str(k): True for k, v in archived.items() if v})
+    print(f"[{now_iso()}] Account archiviati aggiornati: {len(archived_accounts_store)} voci")
+    return jsonify({"status": "ok", "saved": len(archived_accounts_store)}), 200
+
 @app.route("/", methods=["GET"])
 @app.route("/health", methods=["GET"])
 def health():
@@ -106,9 +135,12 @@ def health():
         names_count = len(ea_names_store)
     with account_types_lock:
         types_count = len(account_types_store)
+    with archived_accounts_lock:
+        archived_count = len(archived_accounts_store)
     return jsonify({"status": "online", "updated_at": now_iso(),
                     "vps_active": vps_count, "accounts": acc_count,
-                    "ea_names": names_count, "account_types": types_count})
+                    "ea_names": names_count, "account_types": types_count,
+                    "archived_accounts": archived_count})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
