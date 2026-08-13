@@ -161,6 +161,12 @@ main{padding:22px 24px;max-width:1700px;margin:0 auto;}
 .vps-block.row-off>.vps-content{opacity:.45;pointer-events:none;}
 .mt-block.row-off>.mt-header{opacity:.55;}
 .mt-block.row-off>.ea-container{opacity:.55;}/* pointer-events abilitati: toggle EA cliccabili anche con account disabilitato */
+.mt-block.archived>.mt-header{opacity:.5;filter:grayscale(.4);}
+.archive-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;margin-left:6px;}
+.archive-btn:hover{background:rgba(240,165,0,.12);color:var(--accent);border-color:rgba(240,165,0,.4);}
+.archive-btn.archived{background:rgba(150,150,170,.18);color:var(--text2);border-color:var(--border2);}
+.archived-badge{background:rgba(150,150,170,.18);color:var(--text2);border:1px solid var(--border2);}
+.header-btn.on{background:rgba(240,165,0,.18);color:var(--accent);border-color:rgba(240,165,0,.5);}
 .wr-wrap{display:flex;align-items:center;gap:6px;min-width:90px;}
 .wr-bar{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
 .wr-fill{height:100%;border-radius:2px;transition:width .4s;}
@@ -369,7 +375,8 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
     </div>
     <span class="status-tag" id="statusTag">Caricamento...</span>
     <span class="last-update-tag" id="lastUpdateTag" title="Ultimo dato ricevuto dal server">⏱ —</span>
-    <button class="header-btn" onclick="resetFilters()" title="Ripristina tutti i filtri e toggle">↺ Reset filtri</button>
+    <button class="header-btn" id="showArchivedBtn" onclick="toggleShowArchived(this)" title="Mostra/nascondi gli account archiviati — restano comunque sempre esclusi dalle statistiche">📁 Mostra archiviate</button>
+    <button class="header-btn" onclick="resetFilters()" title="Ripristina tutti i filtri e toggle (non tocca gli account archiviati)">↺ Reset filtri</button>
     <button class="header-btn" onclick="manualRefresh()">↻ Aggiorna</button>
     <button class="header-btn" onclick="openSettings()">⚙ Nomi EA</button>
   </div>
@@ -542,7 +549,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.6.1";
+const APP_VERSION="4.7.0";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -564,6 +571,16 @@ function saveDisabled(){
   localStorage.setItem("disabledMT",  JSON.stringify(disabledMT));
   localStorage.setItem("disabledVPS", JSON.stringify(disabledVPS));
 }
+// ── Archiviazione account (permanente, sincronizzata col server) ─────────────
+// A differenza di disabledMT/disabledEAs/disabledVPS, NON viene mai toccata da
+// resetFilters() e si sincronizza su tutti i dispositivi come i tipi conto.
+// Un account archiviato è escluso SEMPRE dalle statistiche, indipendentemente
+// dal toggle "Mostra archiviate" (che controlla solo la visibilità della riga).
+let archivedAccounts = {};
+try{ const r=localStorage.getItem("archivedAccounts"); if(r) archivedAccounts=JSON.parse(r); }catch(e){ archivedAccounts={}; }
+let showArchived = false;
+try{ showArchived = localStorage.getItem("showArchived")==="1"; }catch(e){ showArchived=false; }
+function isArchived(vn,an){ return !!archivedAccounts[`${vn}_${an}`]; }
 // ── EA Names ─────────────────────────────────────────────────────────────────
 // ── Nomi EA — sincronizzati col server ───────────────────
 // userNames: personalizzazioni utente, chiavi STRINGA
@@ -661,6 +678,56 @@ async function syncAccountTypesToServer(){
       body: JSON.stringify({types: accountTypes})
     });
   }catch(e){}
+}
+async function syncArchivedFromServer(){
+  try{
+    const r = await fetch(SERVER_URL+"/api/archived_accounts",{cache:"no-store"});
+    if(!r.ok) return;
+    const j = await r.json();
+    const srv = (j.archived && typeof j.archived==="object") ? j.archived : {};
+    const srvCount = Object.keys(srv).length;
+    const locCount = Object.keys(archivedAccounts).length;
+    if(srvCount > locCount){
+      archivedAccounts = {};
+      Object.entries(srv).forEach(([k,v])=>{ if(v) archivedAccounts[String(k)]=true; });
+      localStorage.setItem("archivedAccounts", JSON.stringify(archivedAccounts));
+    } else if(locCount > 0){
+      await syncArchivedToServer();
+    }
+  }catch(e){ /* server in sleep o offline — localStorage è il backup */ }
+}
+async function syncArchivedToServer(){
+  try{
+    await fetch(SERVER_URL+"/api/archived_accounts",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","X-API-Key":"tradingvps"},
+      body: JSON.stringify({archived: archivedAccounts})
+    });
+  }catch(e){}
+}
+function toggleArchived(vn, an, e){
+  e.stopPropagation();
+  const key = `${vn}_${an}`;
+  const isArch = !!archivedAccounts[key];
+  if(!isArch){
+    if(!confirm(`Archiviare l'account #${an} su ${vn}?\n\nVerrà escluso DEFINITIVAMENTE da tutte le statistiche (totali, ranking EA, grafici) su tutti i dispositivi. Non viene toccato da "Reset filtri". Potrai ritrovarlo e ripristinarlo in qualsiasi momento con "📁 Mostra archiviate".`)) return;
+    archivedAccounts[key] = true;
+  } else {
+    if(!confirm(`Ripristinare l'account #${an} su ${vn}?\n\nTornerà a essere incluso in tutte le statistiche.`)) return;
+    delete archivedAccounts[key];
+  }
+  localStorage.setItem("archivedAccounts", JSON.stringify(archivedAccounts));
+  syncArchivedToServer();
+  renderAll();
+}
+function toggleShowArchived(btn){
+  showArchived = !showArchived;
+  try{ localStorage.setItem("showArchived", showArchived?"1":"0"); }catch(e){}
+  if(btn){
+    btn.classList.toggle('on', showArchived);
+    btn.textContent = showArchived ? '📁 Nascondi archiviate' : '📁 Mostra archiviate';
+  }
+  renderAll();
 }
 let _typeMenuTarget = null;
 function openAccountTypeMenu(accountNumber, event){
@@ -957,8 +1024,8 @@ function wrColor(w){return w>=65?"var(--green)":w>=50?"var(--accent)":"var(--red
 function pfCls(p){return p>=1.7?"pf-h":p>=1.2?"pf-m":"pf-l";}
 function plCls(n){return n>=0?"pos":"neg";}
 // fix stale isEnabled override
-function filterAccounts(vps){
-  let accs = vps.accounts||[];
+function _filterByModeTerminal(list){
+  let accs = list;
   if(currentMode==="live")          accs=accs.filter(a=>{ const cfg=ACC_TYPE_CFG[getAccountType(a)]; return cfg ? cfg.category!=='demo' : a.mode==='live'; });
   else if(currentMode==="demo")     accs=accs.filter(a=>{ const cfg=ACC_TYPE_CFG[getAccountType(a)]; return cfg ? cfg.category==='demo' : a.mode==='demo'; });
   else if(currentMode==="reale")    accs=accs.filter(a=>ACC_TYPE_CFG[getAccountType(a)]?.category==='reale');
@@ -966,10 +1033,21 @@ function filterAccounts(vps){
   if(currentTerminal!=="both") accs=accs.filter(a=>(a.terminal||'MT4').toUpperCase()===currentTerminal);
   return accs;
 }
+// Usata OVUNQUE per le statistiche (KPI, grafici, ranking, aggregati VPS/account):
+// esclude SEMPRE gli account archiviati, indipendentemente da "Mostra archiviate".
+function filterAccounts(vps){
+  return _filterByModeTerminal(vps.accounts||[]).filter(a=>!isArchived(vps.vps_name,a.account_number));
+}
+// Usata SOLO per decidere quali righe account disegnare nella lista VPS:
+// include gli archiviati solo se l'utente ha attivato "Mostra archiviate".
+function filterAccountsForDisplay(vps){
+  const accs = _filterByModeTerminal(vps.accounts||[]);
+  return showArchived ? accs : accs.filter(a=>!isArchived(vps.vps_name,a.account_number));
+}
 
 async function fetchData(){
-  // Al primo caricamento sincronizza i nomi e i tipi account dal server
-  if(!rawData.length){ await syncNamesFromServer(); await syncAccountTypesFromServer(); }
+  // Al primo caricamento sincronizza i nomi, i tipi account e gli archiviati dal server
+  if(!rawData.length){ await syncNamesFromServer(); await syncAccountTypesFromServer(); await syncArchivedFromServer(); }
   try{
     const r=await fetch(SERVER_URL+"/api/data",{cache:"no-store"});
     if(!r.ok)throw new Error("HTTP "+r.status);
@@ -1195,8 +1273,8 @@ function renderVPSList(){
   if(!rawData.length){c.innerHTML=`<div class="state-box"><span>📡 Nessun dato ricevuto.</span></div>`;return;}
   c.innerHTML="";
   rawData.forEach((vps,vi)=>{
-    const accs=filterAccounts(vps);
-    const agg=calcVPSStats(vps);
+    const accsDisplay=filterAccountsForDisplay(vps); // include archiviati solo se "Mostra archiviate" è attivo
+    const agg=calcVPSStats(vps); // esclude sempre gli archiviati
     const isOpen=!!expandedVps[vps.vps_name];
     const vpsOn=isVPSEnabled(vps.vps_name);
     const b=document.createElement("div");
@@ -1206,8 +1284,8 @@ function renderVPSList(){
     const vpsAllTrades = [];
     filterAccounts(vps).forEach(a=>(a.trades||[]).forEach(t=>{ if(isEnabled(vps.vps_name,a.account_number,t.m)) vpsAllTrades.push(t); }));
     const vpsDDpct = calcDailyDD(vpsAllTrades, vpsBalance);
-    const aggH=`<div class="mcell"><div class="mcell-label">Win Rate</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Balance</div><div class="mcell-val neu">${vpsBalance>0?fmtPL(vpsBalance):'—'}</div></div><div class="mcell"><div class="mcell-label">Equity</div><div class="mcell-val ${vpsEquity>=vpsBalance?'pos':'neg'}">${vpsEquity>0?fmtPL(vpsEquity):'—'}</div></div><div class="mcell"><div class="mcell-label">DD% oggi</div><div class="mcell-val ${vpsDDpct>10?'neg':vpsDDpct>5?'acc':'pos'}">${vpsDDpct>0?vpsDDpct.toFixed(2)+'%':'—'}</div></div><div class="mcell"><div class="mcell-label">Operazioni</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accs.length}</div></div>`;
-    b.innerHTML=`<div class="vps-header ${isOpen?'open':''}" onclick="toggleVPS('${vps.vps_name}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="vps-name-group"><span class="vps-badge">${vps.vps_name}</span><div><div class="vps-name">${vps.vps_name}</div><div class="vps-meta">${accs.length} account · ${accs.reduce((s,a)=>s+(a.eas||[]).length,0)} EA</div></div></div>${aggH}<button class="row-toggle ${vpsOn?'on':''}" title="${vpsOn?'Disabilita VPS':'Abilita VPS'}" onclick="toggleVPSEnabled('${vps.vps_name}',this,event)"></button></div><div class="vps-content ${isOpen?'open':''}" id="vc-${vps.vps_name}">${accs.length?accs.map(acc=>renderMT(vps,acc)).join(""):'<div class="state-box" style="padding:16px"><span>Nessun account per il filtro.</span></div>'}</div>`;
+    const aggH=`<div class="mcell"><div class="mcell-label">Win Rate</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Balance</div><div class="mcell-val neu">${vpsBalance>0?fmtPL(vpsBalance):'—'}</div></div><div class="mcell"><div class="mcell-label">Equity</div><div class="mcell-val ${vpsEquity>=vpsBalance?'pos':'neg'}">${vpsEquity>0?fmtPL(vpsEquity):'—'}</div></div><div class="mcell"><div class="mcell-label">DD% oggi</div><div class="mcell-val ${vpsDDpct>10?'neg':vpsDDpct>5?'acc':'pos'}">${vpsDDpct>0?vpsDDpct.toFixed(2)+'%':'—'}</div></div><div class="mcell"><div class="mcell-label">Operazioni</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Account</div><div class="mcell-val acc">${accsDisplay.length}</div></div>`;
+    b.innerHTML=`<div class="vps-header ${isOpen?'open':''}" onclick="toggleVPS('${vps.vps_name}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="vps-name-group"><span class="vps-badge">${vps.vps_name}</span><div><div class="vps-name">${vps.vps_name}</div><div class="vps-meta">${accsDisplay.length} account · ${accsDisplay.reduce((s,a)=>s+(a.eas||[]).length,0)} EA</div></div></div>${aggH}<button class="row-toggle ${vpsOn?'on':''}" title="${vpsOn?'Disabilita VPS':'Abilita VPS'}" onclick="toggleVPSEnabled('${vps.vps_name}',this,event)"></button></div><div class="vps-content ${isOpen?'open':''}" id="vc-${vps.vps_name}">${accsDisplay.length?accsDisplay.map(acc=>renderMT(vps,acc)).join(""):'<div class="state-box" style="padding:16px"><span>Nessun account per il filtro.</span></div>'}</div>`;
     c.appendChild(b);
   });
 }
@@ -1268,14 +1346,16 @@ function renderMT(vps,acc){
   const agg=calcAccStats(acc.trades||[],vps.vps_name,acc.account_number);
   const isOpen=!!expandedMt[mtId];
   const mtOn=isMTEnabled(vps.vps_name,acc.account_number);
+  const archived=isArchived(vps.vps_name,acc.account_number);
   const status=getAccountStatus(acc);
   // Badge visivo accanto al nome account
   const alertBadge=status.level!=='ok'
     ?`<span class="alert-badge ${status.level==='stale'?'alert-stale':'alert-warn'}" title="${status.reason}">${status.label}</span>`
     :`<span class="alert-badge alert-ok">✓ Live</span>`;
+  const archivedBadge=archived?`<span class="alert-badge archived-badge" title="Escluso definitivamente da tutte le statistiche">📁 Archiviata</span>`:'';
   const staleClass=status.level==='stale'?' mt-stale':status.level==='warn'?' mt-warn':'';
   const typeBadge=renderTypeBadge(acc);
-  return `<div class="mt-block${mtOn?'':' row-off'}${staleClass}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span>${typeBadge}${alertBadge}</div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Balance</div><div class="mcell-val neu">${acc.balance>0?fmtPL(acc.balance):'—'}</div></div><div class="mcell"><div class="mcell-label">Equity</div><div class="mcell-val ${(acc.equity||0)>=(acc.balance||0)?'pos':'neg'}">${acc.equity>0?fmtPL(acc.equity):'—'}</div></div><div class="mcell"><div class="mcell-label">DD% oggi</div><div class="mcell-val ${calcDailyDD(acc.trades||[],acc.balance)>10?'neg':calcDailyDD(acc.trades||[],acc.balance)>5?'acc':'pos'}">${calcDailyDD(acc.trades||[],acc.balance)>0?calcDailyDD(acc.trades||[],acc.balance).toFixed(2)+'%':'—'}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'')}</div></div>`;
+  return `<div class="mt-block${mtOn?'':' row-off'}${archived?' archived':''}${staleClass}"><div class="mt-header ${isOpen?'open':''}" onclick="toggleMT('${mtId}',this)"><div class="toggle-icon ${isOpen?'open':''}">▶</div><div class="mt-name-group"><span class="mt-mode ${acc.mode}">${acc.mode.toUpperCase()}</span><span class="mt-type">${acc.terminal||'MT4'}</span><span class="mt-name">#${acc.account_number}</span><span class="mt-broker">${acc.broker||''}</span>${typeBadge}${alertBadge}${archivedBadge}</div><div class="mcell"><div class="mcell-label">WR</div><div class="mcell-val ${agg.wr>=65?'pos':agg.wr>=50?'acc':'neg'}">${agg.wr.toFixed(1)}%</div></div><div class="mcell"><div class="mcell-label">P&L</div><div class="mcell-val ${plCls(agg.pl)}">${fmtPL(agg.pl)}</div></div><div class="mcell"><div class="mcell-label">Balance</div><div class="mcell-val neu">${acc.balance>0?fmtPL(acc.balance):'—'}</div></div><div class="mcell"><div class="mcell-label">Equity</div><div class="mcell-val ${(acc.equity||0)>=(acc.balance||0)?'pos':'neg'}">${acc.equity>0?fmtPL(acc.equity):'—'}</div></div><div class="mcell"><div class="mcell-label">DD% oggi</div><div class="mcell-val ${calcDailyDD(acc.trades||[],acc.balance)>10?'neg':calcDailyDD(acc.trades||[],acc.balance)>5?'acc':'pos'}">${calcDailyDD(acc.trades||[],acc.balance)>0?calcDailyDD(acc.trades||[],acc.balance).toFixed(2)+'%':'—'}</div></div><div class="mcell"><div class="mcell-label">Trade</div><div class="mcell-val neu">${agg.trades}</div></div><div class="mcell"><div class="mcell-label">Valuta</div><div class="mcell-val acc">${acc.currency||''}</div></div><button class="row-toggle ${mtOn?'on':''}" title="${mtOn?'Disabilita account':'Abilita account'}" onclick="toggleMTEnabled('${vps.vps_name}',${acc.account_number},this,event)"></button><button class="archive-btn${archived?' archived':''}" title="${archived?'Ripristina account (rimuovi da archivio)':'Archivia account (esclude definitivamente dalle statistiche)'}" onclick="toggleArchived('${vps.vps_name}',${acc.account_number},event)">📁</button></div><div class="ea-container ${isOpen?'open':''}" id="ea-${mtId}">${renderEATable(acc.eas||[],acc.trades||[],vps.vps_name,acc.account_number,acc.currency||'')}</div></div>`;
 }
 
 function sortEATable(vn, an, col){
@@ -1685,6 +1765,10 @@ function renderAll(){renderKPI();renderAlerts();renderCharts();renderRanking();r
 document.getElementById('verHeader').textContent='v'+APP_VERSION;
 document.getElementById('verTag').textContent='v'+APP_VERSION;
 document.title='VPS Trading Monitor v'+APP_VERSION;
+(function(){
+  const b=document.getElementById('showArchivedBtn');
+  if(b){ b.classList.toggle('on', showArchived); b.textContent = showArchived?'📁 Nascondi archiviate':'📁 Mostra archiviate'; }
+})();
 updateLabel();fetchData();startTimer();
 </script>
 </body>
