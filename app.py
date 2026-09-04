@@ -19,12 +19,17 @@ def now_iso():
 # Nomi EA in memoria — si ripopolano automaticamente dalla dashboard
 ea_names_store = {}
 ea_names_lock  = threading.Lock()
-ea_names_updated_at = now_iso()  # timestamp REALE dell'ultima modifica (non della richiesta)
+# None = "mai modificato in questa esecuzione del processo". IMPORTANTE: non
+# inizializzare a now_iso() qui — Render (piano free) riavvia il processo dopo
+# ogni sleep, e uno store appena svuotato con timestamp "adesso" sembrerebbe
+# più recente di qualsiasi dato reale nel browser, causando la cancellazione
+# dei dati su tutti i dispositivi al primo sync dopo il riavvio.
+ea_names_updated_at = None
 
 # Tipi account in memoria — challenge / funded / instant / live / demo
 account_types_store = {}
 account_types_lock  = threading.Lock()
-account_types_updated_at = now_iso()
+account_types_updated_at = None
 
 # Account archiviati in memoria — chiave "VPS_accountNumber" -> True
 # Esclusione DEFINITIVA dalle statistiche (es. challenge fallite), sincronizzata
@@ -32,7 +37,7 @@ account_types_updated_at = now_iso()
 # categoria, solo dentro/fuori dall'archivio.
 archived_accounts_store = {}
 archived_accounts_lock  = threading.Lock()
-archived_accounts_updated_at = now_iso()
+archived_accounts_updated_at = None
 
 @app.route("/api/update", methods=["POST"])
 def update():
