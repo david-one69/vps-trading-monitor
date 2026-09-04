@@ -549,7 +549,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="4.7.0";
+const APP_VERSION="4.7.1";
 const REFRESH_MS=60000;
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
@@ -577,20 +577,40 @@ function saveDisabled(){
 // Un account archiviato è escluso SEMPRE dalle statistiche, indipendentemente
 // dal toggle "Mostra archiviate" (che controlla solo la visibilità della riga).
 let archivedAccounts = {};
-try{ const r=localStorage.getItem("archivedAccounts"); if(r) archivedAccounts=JSON.parse(r); }catch(e){ archivedAccounts={}; }
+let archivedUpdatedAt = 0;
+try{
+  const r=localStorage.getItem("archivedAccounts"); if(r) archivedAccounts=JSON.parse(r);
+  const ts=localStorage.getItem("archivedUpdatedAt"); if(ts) archivedUpdatedAt=parseInt(ts,10)||0;
+}catch(e){ archivedAccounts={}; }
 let showArchived = false;
 try{ showArchived = localStorage.getItem("showArchived")==="1"; }catch(e){ showArchived=false; }
 function isArchived(vn,an){ return !!archivedAccounts[`${vn}_${an}`]; }
+function saveArchivedLocal(){
+  archivedUpdatedAt = Date.now();
+  localStorage.setItem("archivedAccounts", JSON.stringify(archivedAccounts));
+  localStorage.setItem("archivedUpdatedAt", String(archivedUpdatedAt));
+}
 // ── EA Names ─────────────────────────────────────────────────────────────────
 // ── Nomi EA — sincronizzati col server ───────────────────
 // userNames: personalizzazioni utente, chiavi STRINGA
 // Al caricamento: prima il localStorage (immediato), poi il server (autoritativo)
 // Al salvataggio: localStorage + server in parallelo
+// Sync basata su TIMESTAMP reale (non sul conteggio): un rename mantiene lo
+// stesso numero di chiavi ma deve comunque propagarsi agli altri dispositivi.
 let userNames = {};
+let userNamesUpdatedAt = 0;
 try {
   const raw = localStorage.getItem("eaNames");
   if(raw) userNames = JSON.parse(raw);
+  const ts = localStorage.getItem("eaNamesUpdatedAt");
+  if(ts) userNamesUpdatedAt = parseInt(ts,10) || 0;
 } catch(e) { userNames = {}; }
+
+function saveNamesLocal(){
+  userNamesUpdatedAt = Date.now();
+  localStorage.setItem("eaNames", JSON.stringify(userNames));
+  localStorage.setItem("eaNamesUpdatedAt", String(userNamesUpdatedAt));
+}
 
 function getEAName(magic, autoName){
   const k = String(magic);
@@ -604,15 +624,17 @@ async function syncNamesFromServer(){
     if(!r.ok) return;
     const j = await r.json();
     const serverNames = (j.names && typeof j.names === "object") ? j.names : {};
-    const serverCount = Object.keys(serverNames).length;
-    const localCount  = Object.keys(userNames).length;
+    const serverTs = j.updated_at ? new Date(j.updated_at).getTime() : 0;
 
-    if(serverCount > localCount){
-      // Il server ha più nomi (un altro dispositivo ha salvato dopo di noi) — prendiamo i suoi
+    if(serverTs > userNamesUpdatedAt){
+      // Il server ha una versione più recente (rename fatto altrove, o server ripartito con dati più freschi) — la adottiamo
+      userNames = {};
       Object.entries(serverNames).forEach(([k,v])=>{ if(v) userNames[String(k)]=String(v); });
+      userNamesUpdatedAt = serverTs;
       localStorage.setItem("eaNames", JSON.stringify(userNames));
-    } else if(localCount > 0){
-      // Noi abbiamo più nomi (server appena riavviato o mai sincronizzato) — rispediamo i nostri
+      localStorage.setItem("eaNamesUpdatedAt", String(userNamesUpdatedAt));
+    } else if(userNamesUpdatedAt > serverTs && Object.keys(userNames).length){
+      // Abbiamo modifiche locali più recenti non ancora sul server (es. dopo un sleep di Render) — le rispediamo
       await syncNamesToServer();
     }
   }catch(e){ /* server in sleep o offline — localStorage è il backup */ }
@@ -621,11 +643,18 @@ async function syncNamesFromServer(){
 // Salva nomi sul server (non blocca l'UI)
 async function syncNamesToServer(){
   try{
-    await fetch(SERVER_URL + "/api/names", {
+    const r = await fetch(SERVER_URL + "/api/names", {
       method:"POST",
       headers:{"Content-Type":"application/json","X-API-Key":"tradingvps"},
       body: JSON.stringify({names: userNames})
     });
+    if(r.ok){
+      const j = await r.json();
+      if(j.updated_at){
+        userNamesUpdatedAt = new Date(j.updated_at).getTime();
+        localStorage.setItem("eaNamesUpdatedAt", String(userNamesUpdatedAt));
+      }
+    }
   }catch(e){ /* silenzioso — già salvato in localStorage */ }
 }
 
@@ -643,7 +672,16 @@ const ACC_TYPE_CFG = {
   demo:      {label:"DEMO",           cls:"type-demo",       real:false, category:"demo"},
 };
 let accountTypes = {};
-try{ const r=localStorage.getItem("accountTypes"); if(r) accountTypes=JSON.parse(r); }catch(e){ accountTypes={}; }
+let accountTypesUpdatedAt = 0;
+try{
+  const r=localStorage.getItem("accountTypes"); if(r) accountTypes=JSON.parse(r);
+  const ts=localStorage.getItem("accountTypesUpdatedAt"); if(ts) accountTypesUpdatedAt=parseInt(ts,10)||0;
+}catch(e){ accountTypes={}; }
+function saveAccountTypesLocal(){
+  accountTypesUpdatedAt = Date.now();
+  localStorage.setItem("accountTypes", JSON.stringify(accountTypes));
+  localStorage.setItem("accountTypesUpdatedAt", String(accountTypesUpdatedAt));
+}
 
 function getAccountType(acc){
   const t = accountTypes[String(acc.account_number)];
@@ -660,23 +698,32 @@ async function syncAccountTypesFromServer(){
     if(!r.ok) return;
     const j = await r.json();
     const srv = (j.types && typeof j.types==="object") ? j.types : {};
-    const srvCount = Object.keys(srv).length;
-    const locCount = Object.keys(accountTypes).length;
-    if(srvCount > locCount){
+    const srvTs = j.updated_at ? new Date(j.updated_at).getTime() : 0;
+    if(srvTs > accountTypesUpdatedAt){
+      accountTypes = {};
       Object.entries(srv).forEach(([k,v])=>{ if(ACC_TYPE_CFG[v]) accountTypes[String(k)]=v; });
+      accountTypesUpdatedAt = srvTs;
       localStorage.setItem("accountTypes", JSON.stringify(accountTypes));
-    } else if(locCount > 0){
+      localStorage.setItem("accountTypesUpdatedAt", String(accountTypesUpdatedAt));
+    } else if(accountTypesUpdatedAt > srvTs && Object.keys(accountTypes).length){
       await syncAccountTypesToServer();
     }
   }catch(e){}
 }
 async function syncAccountTypesToServer(){
   try{
-    await fetch(SERVER_URL+"/api/account_types",{
+    const r = await fetch(SERVER_URL+"/api/account_types",{
       method:"POST",
       headers:{"Content-Type":"application/json","X-API-Key":"tradingvps"},
       body: JSON.stringify({types: accountTypes})
     });
+    if(r.ok){
+      const j = await r.json();
+      if(j.updated_at){
+        accountTypesUpdatedAt = new Date(j.updated_at).getTime();
+        localStorage.setItem("accountTypesUpdatedAt", String(accountTypesUpdatedAt));
+      }
+    }
   }catch(e){}
 }
 async function syncArchivedFromServer(){
@@ -685,24 +732,32 @@ async function syncArchivedFromServer(){
     if(!r.ok) return;
     const j = await r.json();
     const srv = (j.archived && typeof j.archived==="object") ? j.archived : {};
-    const srvCount = Object.keys(srv).length;
-    const locCount = Object.keys(archivedAccounts).length;
-    if(srvCount > locCount){
+    const srvTs = j.updated_at ? new Date(j.updated_at).getTime() : 0;
+    if(srvTs > archivedUpdatedAt){
       archivedAccounts = {};
       Object.entries(srv).forEach(([k,v])=>{ if(v) archivedAccounts[String(k)]=true; });
+      archivedUpdatedAt = srvTs;
       localStorage.setItem("archivedAccounts", JSON.stringify(archivedAccounts));
-    } else if(locCount > 0){
+      localStorage.setItem("archivedUpdatedAt", String(archivedUpdatedAt));
+    } else if(archivedUpdatedAt > srvTs && Object.keys(archivedAccounts).length){
       await syncArchivedToServer();
     }
   }catch(e){ /* server in sleep o offline — localStorage è il backup */ }
 }
 async function syncArchivedToServer(){
   try{
-    await fetch(SERVER_URL+"/api/archived_accounts",{
+    const r = await fetch(SERVER_URL+"/api/archived_accounts",{
       method:"POST",
       headers:{"Content-Type":"application/json","X-API-Key":"tradingvps"},
       body: JSON.stringify({archived: archivedAccounts})
     });
+    if(r.ok){
+      const j = await r.json();
+      if(j.updated_at){
+        archivedUpdatedAt = new Date(j.updated_at).getTime();
+        localStorage.setItem("archivedUpdatedAt", String(archivedUpdatedAt));
+      }
+    }
   }catch(e){}
 }
 function toggleArchived(vn, an, e){
@@ -716,7 +771,7 @@ function toggleArchived(vn, an, e){
     if(!confirm(`Ripristinare l'account #${an} su ${vn}?\n\nTornerà a essere incluso in tutte le statistiche.`)) return;
     delete archivedAccounts[key];
   }
-  localStorage.setItem("archivedAccounts", JSON.stringify(archivedAccounts));
+  saveArchivedLocal();
   syncArchivedToServer();
   renderAll();
 }
@@ -742,7 +797,7 @@ function openAccountTypeMenu(accountNumber, event){
 function applyAccountType(type){
   if(!_typeMenuTarget) return;
   accountTypes[String(_typeMenuTarget)] = type;
-  localStorage.setItem("accountTypes", JSON.stringify(accountTypes));
+  saveAccountTypesLocal();
   syncAccountTypesToServer();
   document.getElementById("accTypeMenu").classList.remove("open");
   _typeMenuTarget = null;
@@ -959,7 +1014,7 @@ function importNames(event){
       Object.entries(imported).forEach(([k,v])=>{
         if(v&&String(v).trim()){ userNames[String(k)]=String(v).trim(); count++; }
       });
-      localStorage.setItem("eaNames", JSON.stringify(userNames));
+      saveNamesLocal();
       // Sincronizza anche sul server
       syncNamesToServer();
       const fb=document.getElementById("saveOk");
@@ -1668,8 +1723,8 @@ function saveAllNames(){
     else if(v===def)  delete userNames[k];
     else if(!v)       delete userNames[k];
   });
-  // Salva locale
-  localStorage.setItem("eaNames", JSON.stringify(userNames));
+  // Salva locale (aggiorna anche il timestamp usato per la sync)
+  saveNamesLocal();
   // Salva sul server in background (sincronizza tutti i dispositivi)
   syncNamesToServer();
   const fb=document.getElementById("saveOk");
@@ -1681,7 +1736,9 @@ function saveAllNames(){
 function resetAllNames(){
   if(!confirm("Ripristinare tutti i nomi ai valori di default?")) return;
   userNames={};
+  userNamesUpdatedAt = Date.now();
   localStorage.removeItem("eaNames");
+  localStorage.setItem("eaNamesUpdatedAt", String(userNamesUpdatedAt));
   buildSettings(""); renderAll();
 }
 function toggleVPS(name,el){expandedVps[name]=!expandedVps[name];document.getElementById("vc-"+name).classList.toggle("open",expandedVps[name]);el.querySelector(".toggle-icon").classList.toggle("open",expandedVps[name]);el.classList.toggle("open",expandedVps[name]);}
