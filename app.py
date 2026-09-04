@@ -13,13 +13,18 @@ API_KEY    = os.environ.get("API_KEY", "tradingvps")
 data_store = {}
 data_lock  = threading.Lock()
 
+def now_iso():
+    return datetime.now(timezone.utc).isoformat()
+
 # Nomi EA in memoria — si ripopolano automaticamente dalla dashboard
 ea_names_store = {}
 ea_names_lock  = threading.Lock()
+ea_names_updated_at = now_iso()  # timestamp REALE dell'ultima modifica (non della richiesta)
 
 # Tipi account in memoria — challenge / funded / instant / live / demo
 account_types_store = {}
 account_types_lock  = threading.Lock()
+account_types_updated_at = now_iso()
 
 # Account archiviati in memoria — chiave "VPS_accountNumber" -> True
 # Esclusione DEFINITIVA dalle statistiche (es. challenge fallite), sincronizzata
@@ -27,9 +32,7 @@ account_types_lock  = threading.Lock()
 # categoria, solo dentro/fuori dall'archivio.
 archived_accounts_store = {}
 archived_accounts_lock  = threading.Lock()
-
-def now_iso():
-    return datetime.now(timezone.utc).isoformat()
+archived_accounts_updated_at = now_iso()
 
 @app.route("/api/update", methods=["POST"])
 def update():
@@ -62,10 +65,11 @@ def get_data():
 def get_names():
     with ea_names_lock:
         return jsonify({"status": "ok", "names": dict(ea_names_store),
-                        "updated_at": now_iso()})
+                        "updated_at": ea_names_updated_at})
 
 @app.route("/api/names", methods=["POST"])
 def set_names():
+    global ea_names_updated_at
     if request.headers.get("X-API-Key") != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
     payload = request.get_json(force=True, silent=True)
@@ -77,17 +81,20 @@ def set_names():
     with ea_names_lock:
         ea_names_store.clear()
         ea_names_store.update({str(k): str(v) for k, v in names.items() if v})
+        ea_names_updated_at = now_iso()
     print(f"[{now_iso()}] Nomi EA aggiornati: {len(ea_names_store)} voci")
-    return jsonify({"status": "ok", "saved": len(ea_names_store)}), 200
+    return jsonify({"status": "ok", "saved": len(ea_names_store),
+                    "updated_at": ea_names_updated_at}), 200
 
 @app.route("/api/account_types", methods=["GET"])
 def get_account_types():
     with account_types_lock:
         return jsonify({"status": "ok", "types": dict(account_types_store),
-                        "updated_at": now_iso()})
+                        "updated_at": account_types_updated_at})
 
 @app.route("/api/account_types", methods=["POST"])
 def set_account_types():
+    global account_types_updated_at
     if request.headers.get("X-API-Key") != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
     payload = request.get_json(force=True, silent=True)
@@ -96,21 +103,24 @@ def set_account_types():
     types = payload["types"]
     if not isinstance(types, dict):
         return jsonify({"error": "'types' deve essere un oggetto"}), 400
-    valid = {"challenge","funded","instant","live","demo"}
+    valid = {"challenge","funded","instant","live","demo","instant_v"}
     with account_types_lock:
         account_types_store.clear()
         account_types_store.update({str(k): str(v) for k, v in types.items() if v in valid})
+        account_types_updated_at = now_iso()
     print(f"[{now_iso()}] Tipi account aggiornati: {len(account_types_store)} voci")
-    return jsonify({"status": "ok", "saved": len(account_types_store)}), 200
+    return jsonify({"status": "ok", "saved": len(account_types_store),
+                    "updated_at": account_types_updated_at}), 200
 
 @app.route("/api/archived_accounts", methods=["GET"])
 def get_archived_accounts():
     with archived_accounts_lock:
         return jsonify({"status": "ok", "archived": dict(archived_accounts_store),
-                        "updated_at": now_iso()})
+                        "updated_at": archived_accounts_updated_at})
 
 @app.route("/api/archived_accounts", methods=["POST"])
 def set_archived_accounts():
+    global archived_accounts_updated_at
     if request.headers.get("X-API-Key") != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
     payload = request.get_json(force=True, silent=True)
@@ -122,8 +132,10 @@ def set_archived_accounts():
     with archived_accounts_lock:
         archived_accounts_store.clear()
         archived_accounts_store.update({str(k): True for k, v in archived.items() if v})
+        archived_accounts_updated_at = now_iso()
     print(f"[{now_iso()}] Account archiviati aggiornati: {len(archived_accounts_store)} voci")
-    return jsonify({"status": "ok", "saved": len(archived_accounts_store)}), 200
+    return jsonify({"status": "ok", "saved": len(archived_accounts_store),
+                    "updated_at": archived_accounts_updated_at}), 200
 
 @app.route("/", methods=["GET"])
 @app.route("/health", methods=["GET"])
