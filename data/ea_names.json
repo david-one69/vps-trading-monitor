@@ -84,6 +84,7 @@
     "564808": "AXI-Pro 564808 AUDCHF",
     "564809": "AXI-Pro 564809 EURUCHF",
     "564810": "AXI-Pro 564810 AUDCAD",
+    "990011": "RISK LOT MANUALE EA #990011",
     "2201402": "X2201-v1.4 BTCUSD 2201402",
     "2201503": "X2201-auto-lot ### SPENTO",
     "2412026": "2412026 TradeCopier",
@@ -120,5 +121,5 @@
     "-25": "Stamina EA #-25",
     "-22": "Stamina EA #-22"
   },
-  "updated_at": "2026-09-06T10:46:57.522627+00:00"
+  "updated_at": "2026-09-19T13:36:20.755099+00:00"
 }
