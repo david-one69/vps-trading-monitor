@@ -84,7 +84,7 @@
     "564808": "AXI-Pro 564808 AUDCHF",
     "564809": "AXI-Pro 564809 EURUCHF",
     "564810": "AXI-Pro 564810 AUDCAD",
-    "990011": "RISK LOT MANUALE EA #990011",
+    "990011": "RISK-LOT-CALC-MANUALE #990011",
     "2201402": "X2201-v1.4 BTCUSD 2201402",
     "2201503": "X2201-auto-lot ### SPENTO",
     "2412026": "2412026 TradeCopier",
@@ -106,7 +106,9 @@
     "202608031": "DavidEA-RSI(1) GBPUSD #202608031",
     "2026080315": "DavidEA-RSI(15) GBPUSD #2026080315",
     "2026080360": "DavidEA-RSI(60) GBPUSD #2026080360",
+    "-22": "Stamina EA #-22",
     "-24": "Stamina EA #-24",
+    "-25": "Stamina EA #-25",
     "acc_VPS-01_3099610": "AXI Select CONTO PERSONALE 1573 €",
     "acc_VPS-01_431021266": "50 K FTMO CHALLENGE 1 step",
     "acc_VPS-01_7678321": "CONTO PERSONALE Profit Radar 452 €",
@@ -117,9 +119,7 @@
     "acc_VPS-03_10015920": "10 K DEMO",
     "acc_VPS-03_10637": "50 K Prop Number One",
     "acc_VPS-03_4204129": "5 K DEMO",
-    "acc_VPS-03_431018271": "25 K FTMO CHALLENGE",
-    "-25": "Stamina EA #-25",
-    "-22": "Stamina EA #-22"
+    "acc_VPS-03_431018271": "25 K FTMO CHALLENGE"
   },
-  "updated_at": "2026-09-19T13:36:22.124355+00:00"
+  "updated_at": "2026-09-22T09:21:17.784517+00:00"
 }
