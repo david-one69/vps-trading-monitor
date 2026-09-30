@@ -4,7 +4,7 @@ VPS Trading Monitor - Server Centrale
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import datetime, timezone
-import json, os, threading, base64, logging
+import json, os, threading, base64, logging, gzip
 
 import requests
 
@@ -22,12 +22,56 @@ def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
 # ══════════════════════════════════════════════════════════════════════════
+#  COMPRESSIONE GZIP DELLE RISPOSTE
+# ══════════════════════════════════════════════════════════════════════════
+# Render (piano Hobby) ha 5 GB/mese di banda in USCITA. /api/data restituisce
+# lo storico completo di tutti gli account ed e' richiamato ogni 60s da ogni
+# dashboard aperta: senza compressione la banda finisce in pochi giorni.
+# Il JSON si comprime di ~10x. I browser decomprimono in automatico
+# (header Accept-Encoding: gzip), quindi la dashboard non richiede modifiche.
+# Solo libreria standard: nessuna nuova dipendenza in requirements.txt.
+GZIP_MIN_BYTES = 1024   # sotto questa soglia non conviene comprimere
+GZIP_LEVEL     = 6      # buon compromesso velocita'/compressione
+
+@app.after_request
+def gzip_response(resp):
+    try:
+        if resp.direct_passthrough:
+            return resp
+        if resp.status_code < 200 or resp.status_code >= 300:
+            return resp
+        if resp.headers.get("Content-Encoding"):
+            return resp
+        if "gzip" not in request.headers.get("Accept-Encoding", "").lower():
+            return resp
+        if not (resp.mimetype or "").startswith("application/json"):
+            return resp
+        raw = resp.get_data()
+        if len(raw) < GZIP_MIN_BYTES:
+            return resp
+        comp = gzip.compress(raw, compresslevel=GZIP_LEVEL)
+        resp.set_data(comp)
+        resp.headers["Content-Encoding"] = "gzip"
+        resp.headers["Content-Length"] = str(len(comp))
+        vary = resp.headers.get("Vary", "")
+        if "accept-encoding" not in vary.lower():
+            resp.headers["Vary"] = (vary + ", Accept-Encoding") if vary else "Accept-Encoding"
+    except Exception as e:
+        # Mai rompere una risposta per colpa della compressione
+        log.warning(f"gzip saltato: {e}")
+    return resp
+
+# ══════════════════════════════════════════════════════════════════════════
 #  PERSISTENZA SU GITHUB
 # ══════════════════════════════════════════════════════════════════════════
 # Render (piano free) azzera la RAM ad ogni riavvio/sleep. Nomi EA, tipi conto
 # e account archiviati vengono quindi salvati anche come file JSON nel repo
 # GitHub tramite le Contents API, cosi' un riavvio non li perde piu': al
 # prossimo avvio del processo, lo store viene ri-idratato da GitHub.
+#
+# IMPORTANTE: ogni commit dei dati porta "[skip render]" nel messaggio,
+# altrimenti Render lo vede come nuovo codice e fa un Auto-Deploy completo
+# (riavvio del server, RAM svuotata, tutte le VPS e dashboard ricaricano tutto).
 #
 # Config (variabili d'ambiente Render):
 #   GITHUB_TOKEN  - Personal Access Token con permesso di scrittura sul repo
@@ -41,6 +85,7 @@ GITHUB_REPO   = os.environ.get("GITHUB_REPO", "david-one69/vps-trading-monitor")
 GITHUB_BRANCH = os.environ.get("GITHUB_BRANCH", "main")
 GITHUB_API    = "https://api.github.com"
 GITHUB_DATA_DIR = "data"  # cartella nel repo dove finiscono i file JSON
+SKIP_DEPLOY_TAG = "[skip render]"  # impedisce l'Auto-Deploy di Render sui commit dati
 
 _github_enabled = bool(GITHUB_TOKEN)
 if not _github_enabled:
@@ -83,7 +128,8 @@ def github_write_json(filename, data, message):
         content_b64 = base64.b64encode(
             json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
         ).decode("ascii")
-        body = {"message": message, "content": content_b64, "branch": GITHUB_BRANCH}
+        body = {"message": f"{message} {SKIP_DEPLOY_TAG}",
+                "content": content_b64, "branch": GITHUB_BRANCH}
         if sha:
             body["sha"] = sha
         r = requests.put(url, headers=_github_headers(), json=body, timeout=10)
@@ -282,7 +328,8 @@ def health():
                     "vps_active": vps_count, "accounts": acc_count,
                     "ea_names": names_count, "account_types": types_count,
                     "archived_accounts": archived_count,
-                    "github_persistence": _github_enabled})
+                    "github_persistence": _github_enabled,
+                    "gzip": True})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
