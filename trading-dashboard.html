@@ -450,7 +450,7 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
     <div class="ranking-wrap" id="eaRanking"><div class="state-box"><div class="spinner"></div></div></div>
   </div>
 </main>
-<footer>VPS Trading Monitor <span id="verTag"></span> &nbsp;·&nbsp; Aggiornamento automatico ogni 60s &nbsp;·&nbsp; 🌙 Pausa server 01:00–07:00 &nbsp;·&nbsp; Analytics calcolate in tempo reale nel browser</footer>
+<footer>VPS Trading Monitor <span id="verTag"></span> &nbsp;·&nbsp; Aggiornamento automatico ogni 60s solo con scheda visibile &nbsp;·&nbsp; 🌙 Pausa auto-refresh 01:00–07:00 &nbsp;·&nbsp; Analytics calcolate in tempo reale nel browser</footer>
 </div>
 <!-- ══ EA DETAIL MODAL ══ -->
 <div class="ea-modal-overlay" id="eaModalOverlay" onclick="if(event.target===this)closeEAModal()">
@@ -549,8 +549,17 @@ footer{text-align:center;padding:28px;color:var(--text3);font-size:10px;border-t
 </div>
 <script>
 const SERVER_URL="https://vps-trading-monitor.onrender.com";
-const APP_VERSION="5.0.1";
+const APP_VERSION="5.0.2";
 const REFRESH_MS=60000;
+// Pausa notturna: deve corrispondere a quiet_hours del sender (CONFIG).
+// In questa fascia la dashboard NON fa refresh automatico (Render puo' dormire
+// e non consuma banda). Il pulsante "Aggiorna" funziona sempre.
+const QUIET_START=1, QUIET_END=7;
+function isQuietHour(){
+  const h=new Date().getHours();
+  return (QUIET_START<QUIET_END) ? (h>=QUIET_START && h<QUIET_END)
+                                 : (h>=QUIET_START || h<QUIET_END);
+}
 const EA_DEFAULTS={234806:"Titany / Titany X AXI PRO",99999:"TradeCopier",164806:"TitanyX Pro",220150:"X2201-fisso",400012:"Battle-EA-LIVE",2201503:"X2201-auto-lot",100451:"Battle-v3.5.3",1004492:"Battle-v3.3.3",100449:"Battle-v3.4.1",2201502:"X2201-h24",220160:"X2201-v1.6"};
 Chart.defaults.color='rgba(102,110,156,0.9)';
 Chart.defaults.borderColor='rgba(29,33,64,0.8)';
@@ -1101,6 +1110,7 @@ function filterAccountsForDisplay(vps){
 }
 
 async function fetchData(){
+  lastFetchAt=Date.now();
   // Al primo caricamento sincronizza i nomi, i tipi account e gli archiviati dal server
   if(!rawData.length){ await syncNamesFromServer(); await syncAccountTypesFromServer(); await syncArchivedFromServer(); }
   try{
@@ -1119,8 +1129,31 @@ async function fetchData(){
     }
   }
 }
-function startTimer(){clearInterval(refreshTimer);refreshTimer=setInterval(fetchData,REFRESH_MS);}
+// ── Refresh automatico a risparmio banda (v5.0.2) ────────────────────────────
+// Render (piano Hobby) ha 5 GB/mese di banda in uscita e /api/data contiene lo
+// storico completo: ogni scheda aperta che interroga il server ogni 60s consuma
+// GB al giorno. Regole:
+//  - scheda nascosta / browser minimizzato -> nessuna richiesta
+//  - pausa notturna QUIET_START-QUIET_END  -> nessuna richiesta automatica
+//  - al ritorno sulla scheda -> refresh immediato se il dato e' vecchio
+//  - "Aggiorna" manuale funziona sempre, anche di notte
+let lastFetchAt=0;
+function autoRefresh(){
+  if(document.hidden) return;
+  if(isQuietHour()){
+    document.getElementById("statusTag").textContent="🌙 Auto-refresh in pausa";
+    updateLastServerUpdate();
+    return;
+  }
+  fetchData();
+}
+function startTimer(){clearInterval(refreshTimer);refreshTimer=setInterval(autoRefresh,REFRESH_MS);}
 function manualRefresh(){fetchData();clearInterval(refreshTimer);startTimer();}
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden) return;
+  if(!isQuietHour() && Date.now()-lastFetchAt>=REFRESH_MS){ fetchData(); startTimer(); }
+  else if(isQuietHour()){ document.getElementById("statusTag").textContent="🌙 Auto-refresh in pausa"; updateLastServerUpdate(); }
+});
 
 function updateLastServerUpdate(){
   // Trova il received_at più recente tra tutti gli account
@@ -1148,10 +1181,7 @@ function updateLastServerUpdate(){
   else if(diffH < 24)   age = diffH+"h fa";
   else                  age = Math.floor(diffH/24)+"g fa";
   // Stato
-  const QUIET_START = 1, QUIET_END = 7;  // deve corrispondere al sender
-  const hNow = new Date().getHours();
-  const isQuiet = (QUIET_START < QUIET_END) ? (hNow >= QUIET_START && hNow < QUIET_END)
-                                              : (hNow >= QUIET_START || hNow < QUIET_END);
+  const isQuiet = isQuietHour();  // QUIET_START/QUIET_END globali, allineati al sender
   let cls = "last-update-tag";
   let icon = "⏱";
   if(isQuiet){
