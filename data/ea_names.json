@@ -55,6 +55,7 @@
     "292355": "X-Pro 292355 AUDCAD",
     "303030": "30gradi-EA H1 XAUUSD 303030",
     "306423": "AXI-Pro 306423 AUDUSD",
+    "306428": "AXI-Pro AUDCHF 306428",
     "306430": "AXI-Pro 306430 AUDCAD",
     "310289": "AXI-Pro 310289 EURUSD",
     "336214": "AXI-Pro 336214 GBPUSD",
@@ -109,6 +110,7 @@
     "202608031": "DavidEA-RSI(1) GBPUSD #202608031",
     "2026080315": "DavidEA-RSI(15) GBPUSD #2026080315",
     "2026080360": "DavidEA-RSI(60) GBPUSD #2026080360",
+    "-13": "Stamina EA #-13 EURGBP",
     "-22": "Stamina EA #-22",
     "-24": "Stamina EA #-24",
     "-25": "Stamina EA #-25",
@@ -122,8 +124,7 @@
     "acc_VPS-03_10015920": "10 K DEMO",
     "acc_VPS-03_10637": "50 K Prop Number One",
     "acc_VPS-03_4204129": "5 K DEMO",
-    "acc_VPS-03_431018271": "25 K FTMO CHALLENGE",
-    "-13": "Stamina EA #-13 EURGBP"
+    "acc_VPS-03_431018271": "25 K FTMO CHALLENGE"
   },
-  "updated_at": "2026-09-30T12:03:56.484777+00:00"
+  "updated_at": "2026-10-01T20:29:49.725337+00:00"
 }
