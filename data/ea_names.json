@@ -105,7 +105,7 @@
     "20260730": "DavidEA-RSI(15) XAUUSD #20260730",
     "20260803": "DavidEA-RSI(5) GBPUSD #20260803",
     "20260813": "Triple Trigger EA 20260813",
-    "20261004": "PrevDayBreakRetest EA #20261004 ETHUSD",
+    "20261004": "PrevDayBreakRetest 20261004 ETHUSD",
     "25012026": "25012026 TradeCopier",
     "202605072": "RSI-Stoch-EA #202605072 XXXXXX",
     "202607301": "DavidEA-RSI(1) XAUUSD #202607301",
@@ -129,5 +129,5 @@
     "acc_VPS-03_4204129": "5 K DEMO",
     "acc_VPS-03_431018271": "25 K FTMO CHALLENGE"
   },
-  "updated_at": "2026-10-05T19:31:33.251840+00:00"
+  "updated_at": "2026-10-05T19:31:55.475137+00:00"
 }
