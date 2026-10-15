@@ -2,10 +2,10 @@
   "names": {
     "0": "Manual",
     "11": "Stamina EA #11",
-    "13": "Stamina EA #13",
+    "13": "Stamina EA #13 EURGBP",
     "22": "Stamina EA #22 EURCAD",
     "24": "Stamina EA #24 USDCHF",
-    "25": "Stamina EA #25",
+    "25": "Stamina EA #25 USDCAD",
     "7777": "7777 TradeCopier",
     "10007": "10007 BTCUSD",
     "12345": "12345 GridEA_v3.10 XAUUSD",
@@ -137,5 +137,5 @@
     "acc_VPS-03_4204129": "5 K DEMO",
     "acc_VPS-03_431018271": "25 K FTMO CHALLENGE"
   },
-  "updated_at": "2026-10-15T19:05:33.438659+00:00"
+  "updated_at": "2026-10-15T19:06:13.302090+00:00"
 }
