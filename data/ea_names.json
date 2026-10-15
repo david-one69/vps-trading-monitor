@@ -3,7 +3,7 @@
     "0": "Manual",
     "11": "Stamina EA #11",
     "13": "Stamina EA #13",
-    "22": "Stamina EA #22",
+    "22": "Stamina EA #22 EURCAD",
     "24": "Stamina EA #24",
     "25": "Stamina EA #25",
     "7777": "7777 TradeCopier",
@@ -123,7 +123,7 @@
     "2026080360": "DavidEA-RSI(60) GBPUSD #2026080360",
     "-13": "Stamina EA #-13 EURGBP",
     "-22": "Stamina EA #-22 EURCAD",
-    "-24": "Stamina EA #-24",
+    "-24": "Stamina EA #-24 USDCHF",
     "-25": "Stamina EA #-25 USDCAD",
     "acc_VPS-01_3099610": "AXI Select CONTO PERSONALE 1573 €",
     "acc_VPS-01_431021266": "50 K FTMO CHALLENGE 1 step",
@@ -137,5 +137,5 @@
     "acc_VPS-03_4204129": "5 K DEMO",
     "acc_VPS-03_431018271": "25 K FTMO CHALLENGE"
   },
-  "updated_at": "2026-10-15T19:03:52.445203+00:00"
+  "updated_at": "2026-10-15T19:04:57.366349+00:00"
 }
